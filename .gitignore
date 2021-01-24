@@ -1,3 +1,5 @@
+.github/workflows/*
+
 # Godot auto generated files
 *.gen.*
 .import/
