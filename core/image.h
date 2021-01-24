@@ -169,7 +169,7 @@ private:
 	PoolVector<uint8_t> data;
 	int width, height;
 	bool mipmaps;
-  uint32_t mipmaps_low_lvl;
+  int mipmaps_max_lvl;
 
 	void _copy_internals_from(const Image &p_image) {
 		format = p_image.format;
@@ -242,7 +242,7 @@ public:
 	/**
 	 * Generate a mipmap to an image (creates an image 1/4 the size, with averaging of 4->1)
 	 */
-	Error generate_mipmaps(bool p_renormalize = false, int low_lvl = 0);
+	Error generate_mipmaps(bool p_renormalize = false, int p_max_level = -1);
 
 	void clear_mipmaps();
 	void normalize(); //for normal maps
