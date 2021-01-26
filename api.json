@@ -170214,17 +170214,17 @@
 			"INSTANCE_FLAG_DRAW_NEXT_FRAME_IF_VISIBLE": 1,
 			"INSTANCE_FLAG_MAX": 2,
 			"INSTANCE_FLAG_USE_BAKED_LIGHT": 0,
-			"INSTANCE_GEOMETRY_MASK": 30,
-			"INSTANCE_GI_PROBE": 7,
+			"INSTANCE_GEOMETRY_MASK": 62,
+			"INSTANCE_GI_PROBE": 8,
 			"INSTANCE_IMMEDIATE": 3,
-			"INSTANCE_LIGHT": 5,
-			"INSTANCE_LIGHTMAP_CAPTURE": 8,
-			"INSTANCE_MAX": 9,
+			"INSTANCE_LIGHT": 6,
+			"INSTANCE_LIGHTMAP_CAPTURE": 9,
+			"INSTANCE_MAX": 10,
 			"INSTANCE_MESH": 1,
 			"INSTANCE_MULTIMESH": 2,
 			"INSTANCE_NONE": 0,
 			"INSTANCE_PARTICLES": 4,
-			"INSTANCE_REFLECTION_PROBE": 6,
+			"INSTANCE_REFLECTION_PROBE": 7,
 			"LIGHT_DIRECTIONAL": 0,
 			"LIGHT_DIRECTIONAL_SHADOW_DEPTH_RANGE_OPTIMIZED": 1,
 			"LIGHT_DIRECTIONAL_SHADOW_DEPTH_RANGE_STABLE": 0,
@@ -180132,12 +180132,12 @@
 					"INSTANCE_MULTIMESH": 2,
 					"INSTANCE_IMMEDIATE": 3,
 					"INSTANCE_PARTICLES": 4,
-					"INSTANCE_LIGHT": 5,
-					"INSTANCE_REFLECTION_PROBE": 6,
-					"INSTANCE_GI_PROBE": 7,
-					"INSTANCE_LIGHTMAP_CAPTURE": 8,
-					"INSTANCE_MAX": 9,
-					"INSTANCE_GEOMETRY_MASK": 30
+					"INSTANCE_LIGHT": 6,
+					"INSTANCE_REFLECTION_PROBE": 7,
+					"INSTANCE_GI_PROBE": 8,
+					"INSTANCE_LIGHTMAP_CAPTURE": 9,
+					"INSTANCE_MAX": 10,
+					"INSTANCE_GEOMETRY_MASK": 62
 				}
 			},
 			{
@@ -184507,13 +184507,6 @@
 		},
 		"properties": [
 			{
-				"name": "blend_shape_mode",
-				"type": "int",
-				"getter": "get_blend_shape_mode",
-				"setter": "set_blend_shape_mode",
-				"index": -1
-			},
-			{
 				"name": "custom_aabb",
 				"type": "AABB",
 				"getter": "get_custom_aabb",
@@ -184524,25 +184517,6 @@
 		"signals": [
 		],
 		"methods": [
-			{
-				"name": "add_blend_shape",
-				"return_type": "void",
-				"is_editor": false,
-				"is_noscript": false,
-				"is_const": false,
-				"is_reverse": false,
-				"is_virtual": false,
-				"has_varargs": false,
-				"is_from_script": false,
-				"arguments": [
-					{
-						"name": "name",
-						"type": "String",
-						"has_default_value": false,
-						"default_value": ""
-					}
-				]
-			},
 			{
 				"name": "add_surface_from_arrays",
 				"return_type": "void",
@@ -184567,74 +184541,10 @@
 						"default_value": ""
 					},
 					{
-						"name": "blend_shapes",
-						"type": "Array",
-						"has_default_value": true,
-						"default_value": "[]"
-					},
-					{
 						"name": "compress_flags",
 						"type": "int",
 						"has_default_value": true,
 						"default_value": "97280"
-					}
-				]
-			},
-			{
-				"name": "clear_blend_shapes",
-				"return_type": "void",
-				"is_editor": false,
-				"is_noscript": false,
-				"is_const": false,
-				"is_reverse": false,
-				"is_virtual": false,
-				"has_varargs": false,
-				"is_from_script": false,
-				"arguments": [
-				]
-			},
-			{
-				"name": "get_blend_shape_count",
-				"return_type": "int",
-				"is_editor": false,
-				"is_noscript": false,
-				"is_const": true,
-				"is_reverse": false,
-				"is_virtual": false,
-				"has_varargs": false,
-				"is_from_script": false,
-				"arguments": [
-				]
-			},
-			{
-				"name": "get_blend_shape_mode",
-				"return_type": "enum.Mesh::BlendShapeMode",
-				"is_editor": false,
-				"is_noscript": false,
-				"is_const": true,
-				"is_reverse": false,
-				"is_virtual": false,
-				"has_varargs": false,
-				"is_from_script": false,
-				"arguments": [
-				]
-			},
-			{
-				"name": "get_blend_shape_name",
-				"return_type": "String",
-				"is_editor": false,
-				"is_noscript": false,
-				"is_const": true,
-				"is_reverse": false,
-				"is_virtual": false,
-				"has_varargs": false,
-				"is_from_script": false,
-				"arguments": [
-					{
-						"name": "index",
-						"type": "int",
-						"has_default_value": false,
-						"default_value": ""
 					}
 				]
 			},
@@ -184687,25 +184597,6 @@
 				"has_varargs": false,
 				"is_from_script": false,
 				"arguments": [
-				]
-			},
-			{
-				"name": "set_blend_shape_mode",
-				"return_type": "void",
-				"is_editor": false,
-				"is_noscript": false,
-				"is_const": false,
-				"is_reverse": false,
-				"is_virtual": false,
-				"has_varargs": false,
-				"is_from_script": false,
-				"arguments": [
-					{
-						"name": "mode",
-						"type": "int",
-						"has_default_value": false,
-						"default_value": ""
-					}
 				]
 			},
 			{
