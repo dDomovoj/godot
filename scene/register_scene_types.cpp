@@ -208,6 +208,7 @@
 #include "scene/animation/skeleton_ik.h"
 #include "scene/resources/environment.h"
 #include "scene/resources/mesh_library.h"
+#include "scene/resources/voxel_mesh.h"
 #endif
 
 static Ref<ResourceFormatSaverText> resource_saver_text;
@@ -601,6 +602,7 @@ void register_scene_types() {
 
 	ClassDB::register_virtual_class<Mesh>();
 	ClassDB::register_class<ArrayMesh>();
+	ClassDB::register_class<VoxelMesh>();
 	ClassDB::register_class<MultiMesh>();
 	ClassDB::register_class<SurfaceTool>();
 	ClassDB::register_class<MeshDataTool>();
