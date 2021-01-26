@@ -11,22 +11,6 @@ bool VoxelMesh::_set(const StringName &p_name, const Variant &p_value) {
 
 	String sname = p_name;
 
-	if (p_name == "blend_shape/names") {
-
-		PoolVector<String> sk = p_value;
-		int sz = sk.size();
-		PoolVector<String>::Read r = sk.read();
-		for (int i = 0; i < sz; i++)
-			add_blend_shape(r[i]);
-		return true;
-	}
-
-	if (p_name == "blend_shape/mode") {
-
-		set_blend_shape_mode(BlendShapeMode(int(p_value)));
-		return true;
-	}
-
 	if (sname.begins_with("surface_")) {
 
 		int sl = sname.find("/");
@@ -77,16 +61,6 @@ bool VoxelMesh::_set(const StringName &p_name, const Variant &p_value) {
 			if (d.has("index_count"))
 				index_count = d["index_count"];
 
-			Vector<PoolVector<uint8_t> > blend_shapes;
-
-			if (d.has("blend_shape_data")) {
-				Array blend_shape_data = d["blend_shape_data"];
-				for (int i = 0; i < blend_shape_data.size(); i++) {
-					PoolVector<uint8_t> shape = blend_shape_data[i];
-					blend_shapes.push_back(shape);
-				}
-			}
-
 			ERR_FAIL_COND_V(!d.has("aabb"), false);
 			AABB aabb = d["aabb"];
 
@@ -100,7 +74,7 @@ bool VoxelMesh::_set(const StringName &p_name, const Variant &p_value) {
 				}
 			}
 
-			add_surface(format, PrimitiveType(primitive), array_data, vertex_count, array_index_data, index_count, aabb, blend_shapes, bone_aabb);
+			add_surface(format, PrimitiveType(primitive), array_data, vertex_count, array_index_data, index_count, aabb, bone_aabb);
 		} else {
 			ERR_FAIL_V(false);
 		}
@@ -126,18 +100,7 @@ bool VoxelMesh::_get(const StringName &p_name, Variant &r_ret) const {
 
 	String sname = p_name;
 
-	if (p_name == "blend_shape/names") {
-
-		PoolVector<String> sk;
-		for (int i = 0; i < blend_shapes.size(); i++)
-			sk.push_back(blend_shapes[i]);
-		r_ret = sk;
-		return true;
-	} else if (p_name == "blend_shape/mode") {
-
-		r_ret = get_blend_shape_mode();
-		return true;
-	} else if (sname.begins_with("surface_")) {
+	if (sname.begins_with("surface_")) {
 
 		int sl = sname.find("/");
 		if (sl == -1)
@@ -173,15 +136,6 @@ bool VoxelMesh::_get(const StringName &p_name, Variant &r_ret) const {
 	}
 	d["skeleton_aabb"] = arr;
 
-	Vector<PoolVector<uint8_t> > blend_shape_data = VS::get_singleton()->mesh_surface_get_blend_shapes(mesh, idx);
-
-	Array md;
-	for (int i = 0; i < blend_shape_data.size(); i++) {
-		md.push_back(blend_shape_data[i]);
-	}
-
-	d["blend_shape_data"] = md;
-
 	Ref<Material> m = surface_get_material(idx);
 	if (m.is_valid())
 		d["material"] = m;
@@ -198,11 +152,6 @@ void VoxelMesh::_get_property_list(List<PropertyInfo> *p_list) const {
 
 	if (_is_generated())
 		return;
-
-	if (blend_shapes.size()) {
-		p_list->push_back(PropertyInfo(Variant::POOL_STRING_ARRAY, "blend_shape/names", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL));
-		p_list->push_back(PropertyInfo(Variant::INT, "blend_shape/mode", PROPERTY_HINT_ENUM, "Normalized,Relative"));
-	}
 
 	for (int i = 0; i < surfaces.size(); i++) {
 
@@ -230,7 +179,7 @@ void VoxelMesh::_recompute_aabb() {
 	}
 }
 
-void VoxelMesh::add_surface(uint32_t p_format, PrimitiveType p_primitive, const PoolVector<uint8_t> &p_array, int p_vertex_count, const PoolVector<uint8_t> &p_index_array, int p_index_count, const AABB &p_aabb, const Vector<PoolVector<uint8_t> > &p_blend_shapes, const Vector<AABB> &p_bone_aabbs) {
+void VoxelMesh::add_surface(uint32_t p_format, PrimitiveType p_primitive, const PoolVector<uint8_t> &p_array, int p_vertex_count, const PoolVector<uint8_t> &p_index_array, int p_index_count, const AABB &p_aabb, const Vector<AABB> &p_bone_aabbs) {
 
 	Surface s;
 	s.aabb = p_aabb;
@@ -238,16 +187,16 @@ void VoxelMesh::add_surface(uint32_t p_format, PrimitiveType p_primitive, const 
 	surfaces.push_back(s);
 	_recompute_aabb();
 
-	VisualServer::get_singleton()->mesh_add_surface(mesh, p_format, (VS::PrimitiveType)p_primitive, p_array, p_vertex_count, p_index_array, p_index_count, p_aabb, p_blend_shapes, p_bone_aabbs);
+	VisualServer::get_singleton()->mesh_add_surface(mesh, p_format, (VS::PrimitiveType)p_primitive, p_array, p_vertex_count, p_index_array, p_index_count, p_aabb, Vector<PoolVector<uint8_t> >(), p_bone_aabbs);
 }
 
-void VoxelMesh::add_surface_from_arrays(PrimitiveType p_primitive, const Array &p_arrays, const Array &p_blend_shapes, uint32_t p_flags) {
+void VoxelMesh::add_surface_from_arrays(PrimitiveType p_primitive, const Array &p_arrays, uint32_t p_flags) {
 
 	ERR_FAIL_COND(p_arrays.size() != ARRAY_MAX);
 
 	Surface s;
 
-	VisualServer::get_singleton()->mesh_add_surface_from_arrays(mesh, (VisualServer::PrimitiveType)p_primitive, p_arrays, p_blend_shapes, p_flags);
+	VisualServer::get_singleton()->mesh_add_surface_from_arrays(mesh, (VisualServer::PrimitiveType)p_primitive, p_arrays, Array(), p_flags);
 
 	/* make aABB? */ {
 
@@ -285,61 +234,10 @@ Array VoxelMesh::surface_get_arrays(int p_surface) const {
 	ERR_FAIL_INDEX_V(p_surface, surfaces.size(), Array());
 	return VisualServer::get_singleton()->mesh_surface_get_arrays(mesh, p_surface);
 }
-Array VoxelMesh::surface_get_blend_shape_arrays(int p_surface) const {
-
-	ERR_FAIL_INDEX_V(p_surface, surfaces.size(), Array());
-	return VisualServer::get_singleton()->mesh_surface_get_blend_shape_arrays(mesh, p_surface);
-}
 
 int VoxelMesh::get_surface_count() const {
 
 	return surfaces.size();
-}
-
-void VoxelMesh::add_blend_shape(const StringName &p_name) {
-
-	ERR_FAIL_COND_MSG(surfaces.size(), "Can't add a shape key count if surfaces are already created.");
-
-	StringName name = p_name;
-
-	if (blend_shapes.find(name) != -1) {
-
-		int count = 2;
-		do {
-
-			name = String(p_name) + " " + itos(count);
-			count++;
-		} while (blend_shapes.find(name) != -1);
-	}
-
-	blend_shapes.push_back(name);
-	VS::get_singleton()->mesh_set_blend_shape_count(mesh, blend_shapes.size());
-}
-
-int VoxelMesh::get_blend_shape_count() const {
-
-	return blend_shapes.size();
-}
-StringName VoxelMesh::get_blend_shape_name(int p_index) const {
-	ERR_FAIL_INDEX_V(p_index, blend_shapes.size(), StringName());
-	return blend_shapes[p_index];
-}
-void VoxelMesh::clear_blend_shapes() {
-
-	ERR_FAIL_COND_MSG(surfaces.size(), "Can't set shape key count if surfaces are already created.");
-
-	blend_shapes.clear();
-}
-
-void VoxelMesh::set_blend_shape_mode(BlendShapeMode p_mode) {
-
-	blend_shape_mode = p_mode;
-	VS::get_singleton()->mesh_set_blend_shape_mode(mesh, (VS::BlendShapeMode)p_mode);
-}
-
-VoxelMesh::BlendShapeMode VoxelMesh::get_blend_shape_mode() const {
-
-	return blend_shape_mode;
 }
 
 void VoxelMesh::surface_remove(int p_idx) {
@@ -518,7 +416,6 @@ struct VoxelMeshLightmapSurface {
 Error VoxelMesh::lightmap_unwrap(const Transform &p_base_transform, float p_texel_size) {
 
 	ERR_FAIL_COND_V(!voxel_mesh_lightmap_unwrap_callback, ERR_UNCONFIGURED);
-	ERR_FAIL_COND_V_MSG(blend_shapes.size() != 0, ERR_UNAVAILABLE, "Can't unwrap mesh with blend shapes.");
 
 	Vector<float> vertices;
 	Vector<float> normals;
@@ -693,15 +590,7 @@ Error VoxelMesh::lightmap_unwrap(const Transform &p_base_transform, float p_texe
 }
 
 void VoxelMesh::_bind_methods() {
-
-	ClassDB::bind_method(D_METHOD("add_blend_shape", "name"), &VoxelMesh::add_blend_shape);
-	ClassDB::bind_method(D_METHOD("get_blend_shape_count"), &VoxelMesh::get_blend_shape_count);
-	ClassDB::bind_method(D_METHOD("get_blend_shape_name", "index"), &VoxelMesh::get_blend_shape_name);
-	ClassDB::bind_method(D_METHOD("clear_blend_shapes"), &VoxelMesh::clear_blend_shapes);
-	ClassDB::bind_method(D_METHOD("set_blend_shape_mode", "mode"), &VoxelMesh::set_blend_shape_mode);
-	ClassDB::bind_method(D_METHOD("get_blend_shape_mode"), &VoxelMesh::get_blend_shape_mode);
-
-	ClassDB::bind_method(D_METHOD("add_surface_from_arrays", "primitive", "arrays", "blend_shapes", "compress_flags"), &VoxelMesh::add_surface_from_arrays, DEFVAL(Array()), DEFVAL(ARRAY_COMPRESS_DEFAULT));
+	ClassDB::bind_method(D_METHOD("add_surface_from_arrays", "primitive", "arrays", "compress_flags"), &VoxelMesh::add_surface_from_arrays, DEFVAL(ARRAY_COMPRESS_DEFAULT));
 	ClassDB::bind_method(D_METHOD("surface_remove", "surf_idx"), &VoxelMesh::surface_remove);
 	ClassDB::bind_method(D_METHOD("surface_update_region", "surf_idx", "offset", "data"), &VoxelMesh::surface_update_region);
 	ClassDB::bind_method(D_METHOD("surface_get_array_len", "surf_idx"), &VoxelMesh::surface_get_array_len);
@@ -711,20 +600,14 @@ void VoxelMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("surface_find_by_name", "name"), &VoxelMesh::surface_find_by_name);
 	ClassDB::bind_method(D_METHOD("surface_set_name", "surf_idx", "name"), &VoxelMesh::surface_set_name);
 	ClassDB::bind_method(D_METHOD("surface_get_name", "surf_idx"), &VoxelMesh::surface_get_name);
-	// ClassDB::bind_method(D_METHOD("create_trimesh_shape"), &VoxelMesh::create_trimesh_shape);
-	// ClassDB::bind_method(D_METHOD("create_convex_shape"), &VoxelMesh::create_convex_shape);
-	// ClassDB::bind_method(D_METHOD("create_outline", "margin"), &VoxelMesh::create_outline);
 	ClassDB::bind_method(D_METHOD("regen_normalmaps"), &VoxelMesh::regen_normalmaps);
 	ClassDB::set_method_flags(get_class_static(), _scs_create("regen_normalmaps"), METHOD_FLAGS_DEFAULT | METHOD_FLAG_EDITOR);
 	ClassDB::bind_method(D_METHOD("lightmap_unwrap", "transform", "texel_size"), &VoxelMesh::lightmap_unwrap);
 	ClassDB::set_method_flags(get_class_static(), _scs_create("lightmap_unwrap"), METHOD_FLAGS_DEFAULT | METHOD_FLAG_EDITOR);
-	// ClassDB::bind_method(D_METHOD("get_faces"), &VoxelMesh::get_faces);
-	// ClassDB::bind_method(D_METHOD("generate_triangle_mesh"), &VoxelMesh::generate_triangle_mesh);
 
 	ClassDB::bind_method(D_METHOD("set_custom_aabb", "aabb"), &VoxelMesh::set_custom_aabb);
 	ClassDB::bind_method(D_METHOD("get_custom_aabb"), &VoxelMesh::get_custom_aabb);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "blend_shape_mode", PROPERTY_HINT_ENUM, "Normalized,Relative", PROPERTY_USAGE_NOEDITOR), "set_blend_shape_mode", "get_blend_shape_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::AABB, "custom_aabb", PROPERTY_HINT_NONE, ""), "set_custom_aabb", "get_custom_aabb");
 
 	BIND_CONSTANT(NO_INDEX_ARRAY);
@@ -755,7 +638,6 @@ void VoxelMesh::_bind_methods() {
 void VoxelMesh::reload_from_file() {
 	VisualServer::get_singleton()->mesh_clear(mesh);
 	surfaces.clear();
-	clear_blend_shapes();
 	clear_cache();
 
 	Resource::reload_from_file();
@@ -766,10 +648,23 @@ void VoxelMesh::reload_from_file() {
 VoxelMesh::VoxelMesh() {
 
 	mesh = VisualServer::get_singleton()->mesh_create();
-	blend_shape_mode = BLEND_SHAPE_MODE_RELATIVE;
 }
 
 VoxelMesh::~VoxelMesh() {
 
 	VisualServer::get_singleton()->free(mesh);
+}
+
+/// MARK: - Overrides
+
+int VoxelMesh::get_blend_shape_count() const { 
+	return 0; 
+}
+
+StringName VoxelMesh::get_blend_shape_name(int p_index) const {
+	return StringName();
+}
+
+Array VoxelMesh::surface_get_blend_shape_arrays(int p_surface) const {
+	return Array();
 }
