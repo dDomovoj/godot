@@ -184476,43 +184476,20 @@
 	},
 	{
 		"name": "VoxelMesh",
-		"base_class": "Mesh",
+		"base_class": "Resource",
 		"api_type": "core",
 		"singleton": false,
 		"singleton_name": "",
 		"instanciable": true,
 		"is_reference": true,
 		"constants": {
-			"ARRAY_BONES": 6,
-			"ARRAY_COLOR": 3,
-			"ARRAY_FORMAT_BONES": 64,
-			"ARRAY_FORMAT_COLOR": 8,
-			"ARRAY_FORMAT_INDEX": 256,
-			"ARRAY_FORMAT_NORMAL": 2,
-			"ARRAY_FORMAT_TANGENT": 4,
-			"ARRAY_FORMAT_TEX_UV": 16,
-			"ARRAY_FORMAT_TEX_UV2": 32,
-			"ARRAY_FORMAT_VERTEX": 1,
-			"ARRAY_FORMAT_WEIGHTS": 128,
-			"ARRAY_INDEX": 8,
-			"ARRAY_MAX": 9,
+			"ARRAY_INDEX": 3,
+			"ARRAY_MAX": 4,
 			"ARRAY_NORMAL": 1,
-			"ARRAY_TANGENT": 2,
-			"ARRAY_TEX_UV": 4,
-			"ARRAY_TEX_UV2": 5,
-			"ARRAY_VERTEX": 0,
-			"ARRAY_WEIGHTS": 7,
-			"ARRAY_WEIGHTS_SIZE": 4,
-			"NO_INDEX_ARRAY": -1
+			"ARRAY_TEX_UV": 2,
+			"ARRAY_VERTEX": 0
 		},
 		"properties": [
-			{
-				"name": "custom_aabb",
-				"type": "AABB",
-				"getter": "get_custom_aabb",
-				"setter": "set_custom_aabb",
-				"index": -1
-			}
 		],
 		"signals": [
 		],
@@ -184529,27 +184506,15 @@
 				"is_from_script": false,
 				"arguments": [
 					{
-						"name": "primitive",
-						"type": "int",
-						"has_default_value": false,
-						"default_value": ""
-					},
-					{
 						"name": "arrays",
 						"type": "Array",
 						"has_default_value": false,
 						"default_value": ""
-					},
-					{
-						"name": "compress_flags",
-						"type": "int",
-						"has_default_value": true,
-						"default_value": "97280"
 					}
 				]
 			},
 			{
-				"name": "get_custom_aabb",
+				"name": "get_aabb",
 				"return_type": "AABB",
 				"is_editor": false,
 				"is_noscript": false,
@@ -184562,64 +184527,7 @@
 				]
 			},
 			{
-				"name": "lightmap_unwrap",
-				"return_type": "enum.Error",
-				"is_editor": true,
-				"is_noscript": false,
-				"is_const": false,
-				"is_reverse": false,
-				"is_virtual": false,
-				"has_varargs": false,
-				"is_from_script": false,
-				"arguments": [
-					{
-						"name": "transform",
-						"type": "Transform",
-						"has_default_value": false,
-						"default_value": ""
-					},
-					{
-						"name": "texel_size",
-						"type": "float",
-						"has_default_value": false,
-						"default_value": ""
-					}
-				]
-			},
-			{
-				"name": "regen_normalmaps",
-				"return_type": "void",
-				"is_editor": true,
-				"is_noscript": false,
-				"is_const": false,
-				"is_reverse": false,
-				"is_virtual": false,
-				"has_varargs": false,
-				"is_from_script": false,
-				"arguments": [
-				]
-			},
-			{
-				"name": "set_custom_aabb",
-				"return_type": "void",
-				"is_editor": false,
-				"is_noscript": false,
-				"is_const": false,
-				"is_reverse": false,
-				"is_virtual": false,
-				"has_varargs": false,
-				"is_from_script": false,
-				"arguments": [
-					{
-						"name": "aabb",
-						"type": "AABB",
-						"has_default_value": false,
-						"default_value": ""
-					}
-				]
-			},
-			{
-				"name": "surface_find_by_name",
+				"name": "get_surface_count",
 				"return_type": "int",
 				"is_editor": false,
 				"is_noscript": false,
@@ -184629,17 +184537,11 @@
 				"has_varargs": false,
 				"is_from_script": false,
 				"arguments": [
-					{
-						"name": "name",
-						"type": "String",
-						"has_default_value": false,
-						"default_value": ""
-					}
 				]
 			},
 			{
-				"name": "surface_get_array_index_len",
-				"return_type": "int",
+				"name": "surface_get_arrays",
+				"return_type": "Array",
 				"is_editor": false,
 				"is_noscript": false,
 				"is_const": true,
@@ -184657,65 +184559,8 @@
 				]
 			},
 			{
-				"name": "surface_get_array_len",
-				"return_type": "int",
-				"is_editor": false,
-				"is_noscript": false,
-				"is_const": true,
-				"is_reverse": false,
-				"is_virtual": false,
-				"has_varargs": false,
-				"is_from_script": false,
-				"arguments": [
-					{
-						"name": "surf_idx",
-						"type": "int",
-						"has_default_value": false,
-						"default_value": ""
-					}
-				]
-			},
-			{
-				"name": "surface_get_format",
-				"return_type": "int",
-				"is_editor": false,
-				"is_noscript": false,
-				"is_const": true,
-				"is_reverse": false,
-				"is_virtual": false,
-				"has_varargs": false,
-				"is_from_script": false,
-				"arguments": [
-					{
-						"name": "surf_idx",
-						"type": "int",
-						"has_default_value": false,
-						"default_value": ""
-					}
-				]
-			},
-			{
-				"name": "surface_get_name",
-				"return_type": "String",
-				"is_editor": false,
-				"is_noscript": false,
-				"is_const": true,
-				"is_reverse": false,
-				"is_virtual": false,
-				"has_varargs": false,
-				"is_from_script": false,
-				"arguments": [
-					{
-						"name": "surf_idx",
-						"type": "int",
-						"has_default_value": false,
-						"default_value": ""
-					}
-				]
-			},
-			{
-				"name": "surface_get_primitive_type",
-				"return_type": "enum.Mesh::PrimitiveType",
+				"name": "surface_get_material",
+				"return_type": "Material",
 				"is_editor": false,
 				"is_noscript": false,
 				"is_const": true,
@@ -184752,7 +184597,7 @@
 				]
 			},
 			{
-				"name": "surface_set_name",
+				"name": "surface_set_material",
 				"return_type": "void",
 				"is_editor": false,
 				"is_noscript": false,
@@ -184769,39 +184614,8 @@
 						"default_value": ""
 					},
 					{
-						"name": "name",
-						"type": "String",
-						"has_default_value": false,
-						"default_value": ""
-					}
-				]
-			},
-			{
-				"name": "surface_update_region",
-				"return_type": "void",
-				"is_editor": false,
-				"is_noscript": false,
-				"is_const": false,
-				"is_reverse": false,
-				"is_virtual": false,
-				"has_varargs": false,
-				"is_from_script": false,
-				"arguments": [
-					{
-						"name": "surf_idx",
-						"type": "int",
-						"has_default_value": false,
-						"default_value": ""
-					},
-					{
-						"name": "offset",
-						"type": "int",
-						"has_default_value": false,
-						"default_value": ""
-					},
-					{
-						"name": "data",
-						"type": "PoolByteArray",
+						"name": "material",
+						"type": "Material",
 						"has_default_value": false,
 						"default_value": ""
 					}
@@ -184810,34 +184624,143 @@
 		],
 		"enums": [
 			{
-				"name": "ArrayFormat",
-				"values": {
-					"ARRAY_FORMAT_VERTEX": 1,
-					"ARRAY_FORMAT_NORMAL": 2,
-					"ARRAY_FORMAT_TANGENT": 4,
-					"ARRAY_FORMAT_COLOR": 8,
-					"ARRAY_FORMAT_TEX_UV": 16,
-					"ARRAY_FORMAT_TEX_UV2": 32,
-					"ARRAY_FORMAT_BONES": 64,
-					"ARRAY_FORMAT_WEIGHTS": 128,
-					"ARRAY_FORMAT_INDEX": 256
-				}
-			},
-			{
 				"name": "ArrayType",
 				"values": {
 					"ARRAY_VERTEX": 0,
 					"ARRAY_NORMAL": 1,
-					"ARRAY_TANGENT": 2,
-					"ARRAY_COLOR": 3,
-					"ARRAY_TEX_UV": 4,
-					"ARRAY_TEX_UV2": 5,
-					"ARRAY_BONES": 6,
-					"ARRAY_WEIGHTS": 7,
-					"ARRAY_INDEX": 8,
-					"ARRAY_MAX": 9
+					"ARRAY_TEX_UV": 2,
+					"ARRAY_INDEX": 3,
+					"ARRAY_MAX": 4
 				}
 			}
+		]
+	},
+	{
+		"name": "VoxelMeshInstance",
+		"base_class": "GeometryInstance",
+		"api_type": "core",
+		"singleton": false,
+		"singleton_name": "",
+		"instanciable": true,
+		"is_reference": false,
+		"constants": {
+		},
+		"properties": [
+			{
+				"name": "mesh",
+				"type": "Mesh",
+				"getter": "get_mesh",
+				"setter": "set_mesh",
+				"index": -1
+			}
+		],
+		"signals": [
+		],
+		"methods": [
+			{
+				"name": "_mesh_changed",
+				"return_type": "void",
+				"is_editor": false,
+				"is_noscript": false,
+				"is_const": false,
+				"is_reverse": false,
+				"is_virtual": true,
+				"has_varargs": false,
+				"is_from_script": false,
+				"arguments": [
+				]
+			},
+			{
+				"name": "get_mesh",
+				"return_type": "VoxelMesh",
+				"is_editor": false,
+				"is_noscript": false,
+				"is_const": true,
+				"is_reverse": false,
+				"is_virtual": false,
+				"has_varargs": false,
+				"is_from_script": false,
+				"arguments": [
+				]
+			},
+			{
+				"name": "get_surface_material",
+				"return_type": "Material",
+				"is_editor": false,
+				"is_noscript": false,
+				"is_const": true,
+				"is_reverse": false,
+				"is_virtual": false,
+				"has_varargs": false,
+				"is_from_script": false,
+				"arguments": [
+					{
+						"name": "surface",
+						"type": "int",
+						"has_default_value": false,
+						"default_value": ""
+					}
+				]
+			},
+			{
+				"name": "get_surface_material_count",
+				"return_type": "int",
+				"is_editor": false,
+				"is_noscript": false,
+				"is_const": true,
+				"is_reverse": false,
+				"is_virtual": false,
+				"has_varargs": false,
+				"is_from_script": false,
+				"arguments": [
+				]
+			},
+			{
+				"name": "set_mesh",
+				"return_type": "void",
+				"is_editor": false,
+				"is_noscript": false,
+				"is_const": false,
+				"is_reverse": false,
+				"is_virtual": false,
+				"has_varargs": false,
+				"is_from_script": false,
+				"arguments": [
+					{
+						"name": "mesh",
+						"type": "VoxelMesh",
+						"has_default_value": false,
+						"default_value": ""
+					}
+				]
+			},
+			{
+				"name": "set_surface_material",
+				"return_type": "void",
+				"is_editor": false,
+				"is_noscript": false,
+				"is_const": false,
+				"is_reverse": false,
+				"is_virtual": false,
+				"has_varargs": false,
+				"is_from_script": false,
+				"arguments": [
+					{
+						"name": "surface",
+						"type": "int",
+						"has_default_value": false,
+						"default_value": ""
+					},
+					{
+						"name": "material",
+						"type": "Material",
+						"has_default_value": false,
+						"default_value": ""
+					}
+				]
+			}
+		],
+		"enums": [
 		]
 	},
 	{

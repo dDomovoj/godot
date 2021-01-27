@@ -615,6 +615,98 @@ public:
 
 	void update_dirty_materials();
 
+	/* VOXEL MESH API */
+
+	struct VoxelMesh;
+
+	struct VoxelSurface : public Geometry {
+
+		struct Attrib {
+			GLuint index;
+			GLint size;
+			GLenum type;
+			GLboolean normalized;
+			GLsizei stride;
+			uint32_t offset;
+		};
+
+		Attrib attribs[VS::VOXEL_ARRAY_MAX];
+
+		VoxelMesh *mesh;
+		// uint32_t format;
+
+		GLuint vertex_id;
+		GLuint index_id;
+
+		AABB aabb;
+
+		int array_len;
+		int index_array_len;
+
+		int array_byte_size;
+		int index_array_byte_size;
+
+		VS::VoxelPrimitiveType primitive;
+
+		bool active;
+
+		PoolVector<uint8_t> data;
+		PoolVector<uint8_t> index_data;
+
+		int total_data_size;
+
+		Surface() :
+				mesh(NULL),
+				array_len(0),
+				index_array_len(0),
+				array_byte_size(0),
+				index_array_byte_size(0),
+				primitive(VS::VOXEL_PRIMITIVE_TRIANGLES),
+				active(false),
+				total_data_size(0) {
+		}
+	};
+
+	struct VoxelMesh : public GeometryOwner {
+
+		bool active;
+
+		Vector<VoxelSurface *> surfaces;
+
+		AABB custom_aabb;
+
+		mutable uint64_t last_pass;
+
+		VoxelMesh() {}
+	};
+
+	mutable RID_Owner<VoxelMesh> voxel_mesh_owner;
+
+	virtual RID voxel_mesh_create();
+
+	virtual void voxel_mesh_add_surface(RID p_mesh, VoxelPrimitiveType p_primitive, const PoolVector<uint8_t> &p_array, int p_vertex_count, const PoolVector<uint8_t> &p_index_array, int p_index_count, const AABB &p_aabb);
+
+	virtual void voxel_mesh_surface_update_region(RID p_mesh, int p_surface, int p_offset, const PoolVector<uint8_t> &p_data);
+
+	virtual void voxel_mesh_surface_set_material(RID p_mesh, int p_surface, RID p_material);
+	virtual RID voxel_mesh_surface_get_material(RID p_mesh, int p_surface) const;
+
+	virtual int voxel_mesh_surface_get_array_len(RID p_mesh, int p_surface) const;
+	virtual int voxel_mesh_surface_get_array_index_len(RID p_mesh, int p_surface) const;
+
+	virtual PoolVector<uint8_t> voxel_mesh_surface_get_array(RID p_mesh, int p_surface) const;
+	virtual PoolVector<uint8_t> voxel_mesh_surface_get_index_array(RID p_mesh, int p_surface) const;
+
+	virtual VS::VoxelPrimitiveType voxel_mesh_surface_get_primitive_type(RID p_mesh, int p_surface) const;
+
+	virtual AABB voxel_mesh_surface_get_aabb(RID p_mesh, int p_surface) const;
+
+	virtual void voxel_mesh_remove_surface(RID p_mesh, int p_surface);
+	virtual int voxel_mesh_get_surface_count(RID p_mesh) const;
+
+	virtual AABB voxel_mesh_get_aabb(RID p_mesh, RID p_skeleton) const;
+	virtual void voxel_mesh_clear(RID p_mesh);
+
 	/* MESH API */
 
 	struct Mesh;
@@ -737,7 +829,7 @@ public:
 	virtual PoolVector<uint8_t> mesh_surface_get_index_array(RID p_mesh, int p_surface) const;
 
 	virtual uint32_t mesh_surface_get_format(RID p_mesh, int p_surface) const;
-	virtual VS::PrimitiveType mesh_surface_get_primitive_type(RID p_mesh, int p_surface) const;
+	virtual VS::VoxelPrimitiveType mesh_surface_get_primitive_type(RID p_mesh, int p_surface) const;
 
 	virtual AABB mesh_surface_get_aabb(RID p_mesh, int p_surface) const;
 	virtual Vector<PoolVector<uint8_t> > mesh_surface_get_blend_shapes(RID p_mesh, int p_surface) const;

@@ -220,6 +220,66 @@ public:
 	virtual void material_set_line_width(RID p_material, float p_width) = 0;
 	virtual void material_set_next_pass(RID p_material, RID p_next_material) = 0;
 
+	/* VOXEL MESH API */
+
+	enum VoxelArrayType {
+		VOXEL_ARRAY_VERTEX = 0,
+		VOXEL_ARRAY_NORMAL = 1,
+		VOXEL_ARRAY_TEX_UV = 2,
+		VOXEL_ARRAY_INDEX = 3,
+		VOXEL_ARRAY_MAX = 4
+	};
+
+	enum VoxelArrayFormat {
+		/* VOXEL ARRAY FORMAT FLAGS */
+		VOXEL_ARRAY_FORMAT_VERTEX = 1 << VOXEL_ARRAY_VERTEX,
+		VOXEL_ARRAY_FORMAT_NORMAL = 1 << VOXEL_ARRAY_NORMAL,
+		VOXEL_ARRAY_FORMAT_TEX_UV = 1 << VOXEL_ARRAY_TEX_UV,
+		VOXEL_ARRAY_FORMAT_INDEX = 1 << VOXEL_ARRAY_INDEX,
+	};
+
+	enum VoxelPrimitiveType {
+		VOXEL_PRIMITIVE_TRIANGLES = 0,
+		VOXEL_PRIMITIVE_MAX = 1,
+	};
+
+protected:
+	Array _get_array_from_voxel_surface(VoxelPrimitiveType p_primitive, PoolVector<uint8_t> p_vertex_data, int p_vertex_len, PoolVector<uint8_t> p_index_data, int p_index_len) const;
+	Error _voxel_surface_set_data(VoxelPrimitiveType p_primitive, Array p_arrays, PoolVector<uint8_t> &r_vertex_array, int p_vertex_array_len, PoolVector<uint8_t> &r_index_array, int p_index_array_len, AABB &r_aabb, const int p_uv_size);
+
+public:
+
+	virtual RID voxel_mesh_create() = 0;
+
+	virtual uint32_t voxel_mesh_surface_get_index_offset(int p_vertex_len, int p_index_len) const;
+	virtual uint32_t voxel_mesh_surface_get_stride(int p_vertex_len, int p_index_len) const;
+	/// Returns stride
+	virtual uint32_t voxel_mesh_surface_make_offsets(int p_vertex_len, int p_index_len, uint32_t *r_offsets) const;
+	virtual void voxel_mesh_add_surface_from_arrays(RID p_mesh, VoxelPrimitiveType p_primitive, const Array &p_arrays, const int p_uv_size);
+	virtual void voxel_mesh_add_surface(RID p_mesh, VoxelPrimitiveType p_primitive, const PoolVector<uint8_t> &p_array, int p_vertex_count, const PoolVector<uint8_t> &p_index_array, int p_index_count, const AABB &p_aabb) = 0;
+
+	virtual void voxel_mesh_surface_update_region(RID p_mesh, int p_surface, int p_offset, const PoolVector<uint8_t> &p_data) = 0;
+
+	virtual void voxel_mesh_surface_set_material(RID p_mesh, int p_surface, RID p_material) = 0;
+	virtual RID voxel_mesh_surface_get_material(RID p_mesh, int p_surface) const = 0;
+
+	virtual int voxel_mesh_surface_get_array_len(RID p_mesh, int p_surface) const = 0;
+	virtual int voxel_mesh_surface_get_array_index_len(RID p_mesh, int p_surface) const = 0;
+
+	virtual PoolVector<uint8_t> voxel_mesh_surface_get_array(RID p_mesh, int p_surface) const = 0;
+	virtual PoolVector<uint8_t> voxel_mesh_surface_get_index_array(RID p_mesh, int p_surface) const = 0;
+
+	virtual Array voxel_mesh_surface_get_arrays(RID p_mesh, int p_surface) const;
+
+	virtual VoxelPrimitiveType voxel_mesh_surface_get_primitive_type(RID p_mesh, int p_surface) const = 0;
+
+	virtual AABB voxel_mesh_surface_get_aabb(RID p_mesh, int p_surface) const = 0;
+
+	virtual void voxel_mesh_remove_surface(RID p_mesh, int p_index) = 0;
+	virtual int voxel_mesh_get_surface_count(RID p_mesh) const = 0;
+
+	virtual void voxel_mesh_clear(RID p_mesh) = 0;
+
 	/* MESH API */
 
 	enum ArrayType {

@@ -2051,6 +2051,33 @@ void RasterizerStorageGLES2::update_dirty_materials() {
 	}
 }
 
+/* VOXEL MESH API */
+
+RID voxel_mesh_create();
+
+void voxel_mesh_add_surface(RID p_mesh, VoxelPrimitiveType p_primitive, const PoolVector<uint8_t> &p_array, int p_vertex_count, const PoolVector<uint8_t> &p_index_array, int p_index_count, const AABB &p_aabb);
+
+void voxel_mesh_surface_update_region(RID p_mesh, int p_surface, int p_offset, const PoolVector<uint8_t> &p_data);
+
+void voxel_mesh_surface_set_material(RID p_mesh, int p_surface, RID p_material);
+RID voxel_mesh_surface_get_material(RID p_mesh, int p_surface) const;
+
+int voxel_mesh_surface_get_array_len(RID p_mesh, int p_surface) const;
+int voxel_mesh_surface_get_array_index_len(RID p_mesh, int p_surface) const;
+
+PoolVector<uint8_t> voxel_mesh_surface_get_array(RID p_mesh, int p_surface) const;
+PoolVector<uint8_t> voxel_mesh_surface_get_index_array(RID p_mesh, int p_surface) const;
+
+VS::VoxelPrimitiveType voxel_mesh_surface_get_primitive_type(RID p_mesh, int p_surface) const;
+
+AABB voxel_mesh_surface_get_aabb(RID p_mesh, int p_surface) const;
+
+void voxel_mesh_remove_surface(RID p_mesh, int p_surface);
+int voxel_mesh_get_surface_count(RID p_mesh) const;
+
+AABB voxel_mesh_get_aabb(RID p_mesh, RID p_skeleton) const;
+void voxel_mesh_clear(RID p_mesh);
+
 /* MESH API */
 
 RID RasterizerStorageGLES2::mesh_create() {
@@ -5670,6 +5697,17 @@ bool RasterizerStorageGLES2::free(RID p_rid) {
 		}
 
 		mesh_owner.free(p_rid);
+		memdelete(mesh);
+
+		return true;
+	} else if (voxel_mesh_owner.owns(p_rid)) {
+
+		VoxelMesh *mesh = voxel_mesh_owner.get(p_rid);
+
+		mesh->instance_remove_deps();
+		voxel_mesh_clear(p_rid);
+
+		voxel_mesh_owner.free(p_rid);
 		memdelete(mesh);
 
 		return true;
