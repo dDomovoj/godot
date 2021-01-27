@@ -187,6 +187,7 @@
 #include "scene/3d/light.h"
 #include "scene/3d/listener.h"
 #include "scene/3d/mesh_instance.h"
+#include "scene/3d/voxel_mesh_instance.h"
 #include "scene/3d/multimesh_instance.h"
 #include "scene/3d/navigation.h"
 #include "scene/3d/navigation_mesh.h"
@@ -407,6 +408,7 @@ void register_scene_types() {
 	ClassDB::register_class<ARVROrigin>();
 	ClassDB::register_class<InterpolatedCamera>();
 	ClassDB::register_class<MeshInstance>();
+	ClassDB::register_class<VoxelMeshInstance>();
 	ClassDB::register_class<ImmediateGeometry>();
 	ClassDB::register_virtual_class<SpriteBase3D>();
 	ClassDB::register_class<Sprite3D>();

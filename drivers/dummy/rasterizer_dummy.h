@@ -148,8 +148,21 @@ public:
 		VS::BlendShapeMode blend_shape_mode;
 	};
 
+	struct DummyVoxelSurface {
+		PoolVector<uint8_t> array;
+		int vertex_count;
+		PoolVector<uint8_t> index_array;
+		int index_count;
+		AABB aabb;
+	};
+
+	struct DummyVoxelMesh: public RID_Data {
+		Vector<DummyVoxelSurface> surfaces;
+	};
+
 	mutable RID_Owner<DummyTexture> texture_owner;
 	mutable RID_Owner<DummyMesh> mesh_owner;
+	mutable RID_Owner<DummyVoxelMesh> voxel_mesh_owner;
 
 	RID texture_create() {
 
@@ -287,6 +300,86 @@ public:
 
 	void material_add_instance_owner(RID p_material, RasterizerScene::InstanceBase *p_instance) {}
 	void material_remove_instance_owner(RID p_material, RasterizerScene::InstanceBase *p_instance) {}
+
+	/* VOXEL MESH API */
+
+	RID voxel_mesh_create() {
+		DummyVoxelMesh *mesh = memnew(DummyVoxelMesh);
+		ERR_FAIL_COND_V(!mesh, RID());
+		return voxel_mesh_owner.make_rid(mesh);
+	}
+
+	// void voxel_mesh_add_surface(RID p_mesh, const PoolVector<uint8_t> &p_array, int p_vertex_count, const PoolVector<uint8_t> &p_index_array, int p_index_count, const AABB &p_aabb);
+	void voxel_mesh_add_surface(RID p_mesh, const PoolVector<uint8_t> &p_array, int p_vertex_count, const PoolVector<uint8_t> &p_index_array, int p_index_count, const AABB &p_aabb) {
+		DummyVoxelMesh *m = voxel_mesh_owner.getornull(p_mesh);
+		ERR_FAIL_COND(!m);
+
+		m->surfaces.push_back(DummyVoxelSurface());
+		DummyVoxelSurface *s = &m->surfaces.write[m->surfaces.size() - 1];
+		s->array = p_array;
+		s->vertex_count = p_vertex_count;
+		s->index_array = p_index_array;
+		s->index_count = p_index_count;
+		s->aabb = p_aabb;
+	}
+
+	void voxel_mesh_surface_update_region(RID p_mesh, int p_surface, int p_offset, const PoolVector<uint8_t> &p_data) {}
+
+	void voxel_mesh_surface_set_material(RID p_mesh, int p_surface, RID p_material) {}
+	RID voxel_mesh_surface_get_material(RID p_mesh, int p_surface) const { RID(); }
+
+	int voxel_mesh_surface_get_array_len(RID p_mesh, int p_surface) const {
+		DummyVoxelMesh *m = voxel_mesh_owner.getornull(p_mesh);
+		ERR_FAIL_COND_V(!m, 0);
+
+		return m->surfaces[p_surface].vertex_count;
+	}
+	int voxel_mesh_surface_get_array_index_len(RID p_mesh, int p_surface) const {
+		DummyVoxelMesh *m = voxel_mesh_owner.getornull(p_mesh);
+		ERR_FAIL_COND_V(!m, 0);
+
+		return m->surfaces[p_surface].index_count;
+	}
+
+	PoolVector<uint8_t> voxel_mesh_surface_get_array(RID p_mesh, int p_surface) const {
+		DummyVoxelMesh *m = voxel_mesh_owner.getornull(p_mesh);
+		ERR_FAIL_COND_V(!m, PoolVector<uint8_t>());
+
+		return m->surfaces[p_surface].array;
+	}
+	PoolVector<uint8_t> voxel_mesh_surface_get_index_array(RID p_mesh, int p_surface) const {
+		DummyVoxelMesh *m = voxel_mesh_owner.getornull(p_mesh);
+		ERR_FAIL_COND_V(!m, PoolVector<uint8_t>());
+
+		return m->surfaces[p_surface].index_array;
+	}
+
+	VS::VoxelPrimitiveType voxel_mesh_surface_get_primitive_type(RID p_mesh, int p_surface) const {
+		return VS::VOXEL_PRIMITIVE_TRIANGLES;
+	}
+
+	AABB voxel_mesh_surface_get_aabb(RID p_mesh, int p_surface) const {
+		DummyVoxelMesh *m = voxel_mesh_owner.getornull(p_mesh);
+		ERR_FAIL_COND_V(!m, AABB());
+
+		return m->surfaces[p_surface].aabb;
+	}
+
+	void voxel_mesh_remove_surface(RID p_mesh, int p_index) {
+		DummyVoxelMesh *m = voxel_mesh_owner.getornull(p_mesh);
+		ERR_FAIL_COND(!m);
+		ERR_FAIL_COND(p_index >= m->surfaces.size());
+
+		m->surfaces.remove(p_index);
+	}
+	int voxel_mesh_get_surface_count(RID p_mesh) const {
+		DummyVoxelMesh *m = voxel_mesh_owner.getornull(p_mesh);
+		ERR_FAIL_COND_V(!m, 0);
+		return m->surfaces.size();
+	}
+
+	AABB voxel_mesh_get_aabb(RID p_mesh, RID p_skeleton) const { return AABB(); }
+	void voxel_mesh_clear(RID p_mesh) {}
 
 	/* MESH API */
 
@@ -719,7 +812,10 @@ public:
 	VS::InstanceType get_base_type(RID p_rid) const {
 		if (mesh_owner.owns(p_rid)) {
 			return VS::INSTANCE_MESH;
-		} else if (lightmap_capture_data_owner.owns(p_rid)) {
+		} else if (voxel_mesh_owner.owns(p_rid)) {
+			return VS::INSTANCE_VOXEL;
+		}
+		else if (lightmap_capture_data_owner.owns(p_rid)) {
 			return VS::INSTANCE_LIGHTMAP_CAPTURE;
 		}
 
@@ -736,6 +832,11 @@ public:
 			// delete the mesh
 			DummyMesh *mesh = mesh_owner.getornull(p_rid);
 			mesh_owner.free(p_rid);
+			memdelete(mesh);
+		} else if (voxel_mesh_owner.owns(p_rid)) {
+			// delete the mesh
+			DummyVoxelMesh *mesh = voxel_mesh_owner.getornull(p_rid);
+			voxel_mesh_owner.free(p_rid);
 			memdelete(mesh);
 		} else if (lightmap_capture_data_owner.owns(p_rid)) {
 			// delete the lightmap
