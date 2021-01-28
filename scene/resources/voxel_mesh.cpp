@@ -23,7 +23,7 @@ void VoxelMesh::_bind_methods() {
 	// ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "lightmap_size_hint"), "set_lightmap_size_hint", "get_lightmap_size_hint");
 	ClassDB::bind_method(D_METHOD("get_aabb"), &VoxelMesh::get_aabb);
 
-	ClassDB::bind_method(D_METHOD("add_surface_from_arrays", "primitive", "arrays", "uv_size"), &VoxelMesh::add_surface_from_arrays);
+	ClassDB::bind_method(D_METHOD("add_surface_from_arrays", "arrays", "primitive", "uv_size"), &VoxelMesh::add_surface_from_arrays);
 	ClassDB::bind_method(D_METHOD("surface_remove", "surf_idx"), &VoxelMesh::surface_remove);
 	ClassDB::bind_method(D_METHOD("get_surface_count"), &VoxelMesh::get_surface_count);
 	ClassDB::bind_method(D_METHOD("surface_get_arrays", "surf_idx"), &VoxelMesh::surface_get_arrays);
@@ -46,6 +46,8 @@ void VoxelMesh::_bind_methods() {
 
 	// ClassDB::bind_method(D_METHOD("set_custom_aabb", "aabb"), &VoxelMesh::set_custom_aabb);
 	// ClassDB::bind_method(D_METHOD("get_custom_aabb"), &VoxelMesh::get_custom_aabb);
+
+	BIND_ENUM_CONSTANT(VOXEL_PRIMITIVE_TRIANGLES);
 
 	BIND_ENUM_CONSTANT(VOXEL_ARRAY_VERTEX);
 	BIND_ENUM_CONSTANT(VOXEL_ARRAY_NORMAL);
@@ -257,7 +259,7 @@ Array VoxelMesh::surface_get_arrays(int p_surface) const {
 	return Array();
 }
 
-void VoxelMesh::add_surface_from_arrays(VoxelPrimitiveType p_primitive, const Array &p_arrays, const int p_uv_size) {
+void VoxelMesh::add_surface_from_arrays(const Array &p_arrays, VoxelPrimitiveType p_primitive,  const int p_uv_size) {
 	ERR_FAIL_COND(p_arrays.size() != VOXEL_ARRAY_MAX);
 
 	Surface s;

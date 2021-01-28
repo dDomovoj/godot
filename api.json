@@ -184957,7 +184957,8 @@
 			"VOXEL_ARRAY_MAX": 4,
 			"VOXEL_ARRAY_NORMAL": 1,
 			"VOXEL_ARRAY_TEX_UV": 2,
-			"VOXEL_ARRAY_VERTEX": 0
+			"VOXEL_ARRAY_VERTEX": 0,
+			"VOXEL_PRIMITIVE_TRIANGLES": 0
 		},
 		"properties": [
 		],
@@ -184976,14 +184977,14 @@
 				"is_from_script": false,
 				"arguments": [
 					{
-						"name": "primitive",
-						"type": "int",
+						"name": "arrays",
+						"type": "Array",
 						"has_default_value": false,
 						"default_value": ""
 					},
 					{
-						"name": "arrays",
-						"type": "Array",
+						"name": "primitive",
+						"type": "int",
 						"has_default_value": false,
 						"default_value": ""
 					},
@@ -185185,6 +185186,12 @@
 					"VOXEL_ARRAY_TEX_UV": 2,
 					"VOXEL_ARRAY_INDEX": 3,
 					"VOXEL_ARRAY_MAX": 4
+				}
+			},
+			{
+				"name": "VoxelPrimitiveType",
+				"values": {
+					"VOXEL_PRIMITIVE_TRIANGLES": 0
 				}
 			}
 		]
