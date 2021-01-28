@@ -2058,7 +2058,7 @@ RID RasterizerStorageGLES2::voxel_mesh_create() {
 	return voxel_mesh_owner.make_rid(mesh);
 }
 
-void RasterizerStorageGLES2::voxel_mesh_add_surface(RID p_mesh, VoxelPrimitiveType p_primitive, const PoolVector<uint8_t> &p_array, int p_vertex_count, const PoolVector<uint8_t> &p_index_array, int p_index_count, const AABB &p_aabb) {
+void RasterizerStorageGLES2::voxel_mesh_add_surface(RID p_mesh, VS::VoxelPrimitiveType p_primitive, const PoolVector<uint8_t> &p_array, int p_vertex_count, const PoolVector<uint8_t> &p_index_array, int p_index_count, const AABB &p_aabb) {
 
 	PoolVector<uint8_t> array = p_array;
 
@@ -2201,7 +2201,7 @@ PoolVector<uint8_t> RasterizerStorageGLES2::voxel_mesh_surface_get_array(RID p_m
 	ERR_FAIL_COND_V(!mesh, PoolVector<uint8_t>());
 	ERR_FAIL_INDEX_V(p_surface, mesh->surfaces.size(), PoolVector<uint8_t>());
 
-	Surface *surface = mesh->surfaces[p_surface];
+	VoxelSurface *surface = mesh->surfaces[p_surface];
 
 	return surface->data;
 }
@@ -2210,15 +2210,15 @@ PoolVector<uint8_t> RasterizerStorageGLES2::voxel_mesh_surface_get_index_array(R
 	ERR_FAIL_COND_V(!mesh, PoolVector<uint8_t>());
 	ERR_FAIL_INDEX_V(p_surface, mesh->surfaces.size(), PoolVector<uint8_t>());
 
-	Surface *surface = mesh->surfaces[p_surface];
+	VoxelSurface *surface = mesh->surfaces[p_surface];
 
 	return surface->index_data;
 }
 
-VoxelPrimitiveType RasterizerStorageGLES2::voxel_mesh_surface_get_primitive_type(RID p_mesh, int p_surface) const {
+VS::VoxelPrimitiveType RasterizerStorageGLES2::voxel_mesh_surface_get_primitive_type(RID p_mesh, int p_surface) const {
 	const VoxelMesh *mesh = voxel_mesh_owner.getornull(p_mesh);
-	ERR_FAIL_COND_V(!mesh, VS::PRIMITIVE_MAX);
-	ERR_FAIL_INDEX_V(p_surface, mesh->surfaces.size(), VS::PRIMITIVE_MAX);
+	ERR_FAIL_COND_V(!mesh, VS::VOXEL_PRIMITIVE_MAX);
+	ERR_FAIL_INDEX_V(p_surface, mesh->surfaces.size(), VS::VOXEL_PRIMITIVE_MAX);
 
 	return mesh->surfaces[p_surface]->primitive;
 }
@@ -2231,7 +2231,7 @@ AABB RasterizerStorageGLES2::voxel_mesh_surface_get_aabb(RID p_mesh, int p_surfa
 	return mesh->surfaces[p_surface]->aabb;
 }
 
-void RasterizerStorageGLES2::voxel_mesh_remove_surface(RID p_mesh, int p_index) {
+void RasterizerStorageGLES2::voxel_mesh_remove_surface(RID p_mesh, int p_surface) {
 	VoxelMesh *mesh = voxel_mesh_owner.getornull(p_mesh);
 	ERR_FAIL_COND(!mesh);
 	ERR_FAIL_INDEX(p_surface, mesh->surfaces.size());
@@ -2245,10 +2245,6 @@ void RasterizerStorageGLES2::voxel_mesh_remove_surface(RID p_mesh, int p_index) 
 	glDeleteBuffers(1, &surface->vertex_id);
 	if (surface->index_id) {
 		glDeleteBuffers(1, &surface->index_id);
-	}
-
-	for (int i = 0; i < surface->blend_shapes.size(); i++) {
-		glDeleteBuffers(1, &surface->blend_shapes[i].vertex_id);
 	}
 
 	info.vertex_mem -= surface->total_data_size;
@@ -2265,17 +2261,9 @@ int RasterizerStorageGLES2::voxel_mesh_get_surface_count(RID p_mesh) const {
 	return mesh->surfaces.size();
 }
 
-AABB RasterizerStorageGLES2::voxel_mesh_get_aabb(RID p_mesh, RID p_skeleton) const {
+AABB RasterizerStorageGLES2::voxel_mesh_get_aabb(RID p_mesh) const {
 	VoxelMesh *mesh = voxel_mesh_owner.get(p_mesh);
 	ERR_FAIL_COND_V(!mesh, AABB());
-
-	if (mesh->custom_aabb != AABB())
-		return mesh->custom_aabb;
-
-	Skeleton *sk = NULL;
-	if (p_skeleton.is_valid()) {
-		sk = skeleton_owner.get(p_skeleton);
-	}
 
 	AABB aabb;
 	for (int i = 0; i < mesh->surfaces.size(); i++) {

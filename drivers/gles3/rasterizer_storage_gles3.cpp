@@ -3435,7 +3435,7 @@ RID RasterizerStorageGLES3::voxel_mesh_create() {
 	return voxel_mesh_owner.make_rid(mesh);
 }
 
-void RasterizerStorageGLES3::voxel_mesh_add_surface(RID p_mesh, VoxelPrimitiveType p_primitive, const PoolVector<uint8_t> &p_array, int p_vertex_count, const PoolVector<uint8_t> &p_index_array, int p_index_count, const AABB &p_aabb) {
+void RasterizerStorageGLES3::voxel_mesh_add_surface(RID p_mesh, VS::VoxelPrimitiveType p_primitive, const PoolVector<uint8_t> &p_array, int p_vertex_count, const PoolVector<uint8_t> &p_index_array, int p_index_count, const AABB &p_aabb) {
 
 	PoolVector<uint8_t> array = p_array;
 
@@ -3559,7 +3559,7 @@ void RasterizerStorageGLES3::voxel_mesh_surface_update_region(RID p_mesh, int p_
 }
 
 void RasterizerStorageGLES3::voxel_mesh_surface_set_material(RID p_mesh, int p_surface, RID p_material) {
-	VoxelMesh *mesh = mesh_owner.getornull(p_mesh);
+	VoxelMesh *mesh = voxel_mesh_owner.getornull(p_mesh);
 	ERR_FAIL_COND(!mesh);
 	ERR_FAIL_INDEX(p_surface, mesh->surfaces.size());
 
@@ -3606,7 +3606,7 @@ PoolVector<uint8_t> RasterizerStorageGLES3::voxel_mesh_surface_get_array(RID p_m
 	ERR_FAIL_COND_V(!mesh, PoolVector<uint8_t>());
 	ERR_FAIL_INDEX_V(p_surface, mesh->surfaces.size(), PoolVector<uint8_t>());
 
-	Surface *surface = mesh->surfaces[p_surface];
+	VoxelSurface *surface = mesh->surfaces[p_surface];
 
 	PoolVector<uint8_t> ret;
 	ret.resize(surface->array_byte_size);
@@ -3635,7 +3635,7 @@ PoolVector<uint8_t> RasterizerStorageGLES3::voxel_mesh_surface_get_index_array(R
 	ERR_FAIL_COND_V(!mesh, PoolVector<uint8_t>());
 	ERR_FAIL_INDEX_V(p_surface, mesh->surfaces.size(), PoolVector<uint8_t>());
 
-	Surface *surface = mesh->surfaces[p_surface];
+	VoxelSurface *surface = mesh->surfaces[p_surface];
 
 	PoolVector<uint8_t> ret;
 	ret.resize(surface->index_array_byte_size);
@@ -3664,7 +3664,7 @@ PoolVector<uint8_t> RasterizerStorageGLES3::voxel_mesh_surface_get_index_array(R
 	return ret;
 }
 
-VoxelPrimitiveType RasterizerStorageGLES3::voxel_mesh_surface_get_primitive_type(RID p_mesh, int p_surface) const {
+VS::VoxelPrimitiveType RasterizerStorageGLES3::voxel_mesh_surface_get_primitive_type(RID p_mesh, int p_surface) const {
 	const VoxelMesh *mesh = voxel_mesh_owner.getornull(p_mesh);
 	ERR_FAIL_COND_V(!mesh, VS::VOXEL_PRIMITIVE_MAX);
 	ERR_FAIL_INDEX_V(p_surface, mesh->surfaces.size(), VS::VOXEL_PRIMITIVE_MAX);
@@ -3680,7 +3680,7 @@ AABB RasterizerStorageGLES3::voxel_mesh_surface_get_aabb(RID p_mesh, int p_surfa
 	return mesh->surfaces[p_surface]->aabb;
 }
 
-void RasterizerStorageGLES3::voxel_mesh_remove_surface(RID p_mesh, int p_index) {
+void RasterizerStorageGLES3::voxel_mesh_remove_surface(RID p_mesh, int p_surface) {
 	VoxelMesh *mesh = voxel_mesh_owner.getornull(p_mesh);
 	ERR_FAIL_COND(!mesh);
 	ERR_FAIL_INDEX(p_surface, mesh->surfaces.size());
@@ -3713,7 +3713,7 @@ int RasterizerStorageGLES3::voxel_mesh_get_surface_count(RID p_mesh) const {
 	return mesh->surfaces.size();
 }
 
-AABB RasterizerStorageGLES3::voxel_mesh_get_aabb(RID p_mesh, RID p_skeleton) const {
+AABB RasterizerStorageGLES3::voxel_mesh_get_aabb(RID p_mesh) const {
 
 	VoxelMesh *mesh = voxel_mesh_owner.get(p_mesh);
 	ERR_FAIL_COND_V(!mesh, AABB());

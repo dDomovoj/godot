@@ -1019,7 +1019,7 @@ void VisualServerScene::_update_instance_aabb(Instance *p_instance) {
 		} break;
 		case VisualServer::INSTANCE_VOXEL: {
 
-			new_aabb = VSG::storage->voxel_mesh_get_aabb(p_instance->base, p_instance->skeleton);
+			new_aabb = VSG::storage->voxel_mesh_get_aabb(p_instance->base);
 
 		} break;
 		case VisualServer::INSTANCE_MULTIMESH: {

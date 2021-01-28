@@ -366,14 +366,14 @@ public:
 		return m->surfaces[p_surface].aabb;
 	}
 
-	AABB voxel_mesh_get_aabb(RID p_mesh, RID p_skeleton) const { return AABB(); }
+	AABB voxel_mesh_get_aabb(RID p_mesh) const { return AABB(); }
 
-	void voxel_mesh_remove_surface(RID p_mesh, int p_index) {
+	void voxel_mesh_remove_surface(RID p_mesh, int p_surface) {
 		DummyVoxelMesh *m = voxel_mesh_owner.getornull(p_mesh);
 		ERR_FAIL_COND(!m);
-		ERR_FAIL_COND(p_index >= m->surfaces.size());
+		ERR_FAIL_COND(p_surface >= m->surfaces.size());
 
-		m->surfaces.remove(p_index);
+		m->surfaces.remove(p_surface);
 	}
 	int voxel_mesh_get_surface_count(RID p_mesh) const {
 		DummyVoxelMesh *m = voxel_mesh_owner.getornull(p_mesh);
