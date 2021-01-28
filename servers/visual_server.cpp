@@ -361,7 +361,7 @@ RID VisualServer::get_white_texture() {
 	1-2 (1-4) byte index (depending on vertex count)
 */
 
-#define VOXEL_ELEMENT_SIZE 6
+#define VOXEL_ELEMENT_SIZE VS::VOXEL_VERTEX_STRIDE
 #define VOXEL_FACE_GROUP_SIZE 4
 
 const float __voxel_size_lookup_table[8] = { 

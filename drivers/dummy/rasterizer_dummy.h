@@ -150,6 +150,7 @@ public:
 
 	struct DummyVoxelSurface {
 		PoolVector<uint8_t> array;
+		VS::VoxelPrimitiveType primitive;
 		int vertex_count;
 		PoolVector<uint8_t> index_array;
 		int index_count;
@@ -309,13 +310,13 @@ public:
 		return voxel_mesh_owner.make_rid(mesh);
 	}
 
-	// void voxel_mesh_add_surface(RID p_mesh, const PoolVector<uint8_t> &p_array, int p_vertex_count, const PoolVector<uint8_t> &p_index_array, int p_index_count, const AABB &p_aabb);
-	void voxel_mesh_add_surface(RID p_mesh, const PoolVector<uint8_t> &p_array, int p_vertex_count, const PoolVector<uint8_t> &p_index_array, int p_index_count, const AABB &p_aabb) {
+	void voxel_mesh_add_surface(RID p_mesh, VS::VoxelPrimitiveType p_primitive, const PoolVector<uint8_t> &p_array, int p_vertex_count, const PoolVector<uint8_t> &p_index_array, int p_index_count, const AABB &p_aabb) {
 		DummyVoxelMesh *m = voxel_mesh_owner.getornull(p_mesh);
 		ERR_FAIL_COND(!m);
 
 		m->surfaces.push_back(DummyVoxelSurface());
 		DummyVoxelSurface *s = &m->surfaces.write[m->surfaces.size() - 1];
+		s->primitive = p_primitive;
 		s->array = p_array;
 		s->vertex_count = p_vertex_count;
 		s->index_array = p_index_array;
@@ -365,6 +366,8 @@ public:
 		return m->surfaces[p_surface].aabb;
 	}
 
+	AABB voxel_mesh_get_aabb(RID p_mesh, RID p_skeleton) const { return AABB(); }
+
 	void voxel_mesh_remove_surface(RID p_mesh, int p_index) {
 		DummyVoxelMesh *m = voxel_mesh_owner.getornull(p_mesh);
 		ERR_FAIL_COND(!m);
@@ -378,7 +381,6 @@ public:
 		return m->surfaces.size();
 	}
 
-	AABB voxel_mesh_get_aabb(RID p_mesh, RID p_skeleton) const { return AABB(); }
 	void voxel_mesh_clear(RID p_mesh) {}
 
 	/* MESH API */

@@ -243,6 +243,10 @@ public:
 		VOXEL_PRIMITIVE_MAX = 1,
 	};
 
+	enum {
+		VOXEL_VERTEX_STRIDE = 6,
+	};
+
 protected:
 	Array _get_array_from_voxel_surface(VoxelPrimitiveType p_primitive, PoolVector<uint8_t> p_vertex_data, int p_vertex_len, PoolVector<uint8_t> p_index_data, int p_index_len) const;
 	Error _voxel_surface_set_data(VoxelPrimitiveType p_primitive, Array p_arrays, PoolVector<uint8_t> &r_vertex_array, int p_vertex_array_len, PoolVector<uint8_t> &r_index_array, int p_index_array_len, AABB &r_aabb, const int p_uv_size);
@@ -1139,6 +1143,9 @@ VARIANT_ENUM_CAST(VisualServer::ShaderMode);
 VARIANT_ENUM_CAST(VisualServer::ArrayType);
 VARIANT_ENUM_CAST(VisualServer::ArrayFormat);
 VARIANT_ENUM_CAST(VisualServer::PrimitiveType);
+VARIANT_ENUM_CAST(VisualServer::VoxelArrayType);
+VARIANT_ENUM_CAST(VisualServer::VoxelArrayFormat);
+VARIANT_ENUM_CAST(VisualServer::VoxelPrimitiveType);
 VARIANT_ENUM_CAST(VisualServer::BlendShapeMode);
 VARIANT_ENUM_CAST(VisualServer::LightType);
 VARIANT_ENUM_CAST(VisualServer::LightParam);

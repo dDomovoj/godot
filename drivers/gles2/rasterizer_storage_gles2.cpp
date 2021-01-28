@@ -2053,30 +2053,248 @@ void RasterizerStorageGLES2::update_dirty_materials() {
 
 /* VOXEL MESH API */
 
-RID voxel_mesh_create();
+RID RasterizerStorageGLES2::voxel_mesh_create() {
+	VoxelMesh *mesh = memnew(VoxelMesh);
+	return voxel_mesh_owner.make_rid(mesh);
+}
 
-void voxel_mesh_add_surface(RID p_mesh, VoxelPrimitiveType p_primitive, const PoolVector<uint8_t> &p_array, int p_vertex_count, const PoolVector<uint8_t> &p_index_array, int p_index_count, const AABB &p_aabb);
+void RasterizerStorageGLES2::voxel_mesh_add_surface(RID p_mesh, VoxelPrimitiveType p_primitive, const PoolVector<uint8_t> &p_array, int p_vertex_count, const PoolVector<uint8_t> &p_index_array, int p_index_count, const AABB &p_aabb) {
 
-void voxel_mesh_surface_update_region(RID p_mesh, int p_surface, int p_offset, const PoolVector<uint8_t> &p_data);
+	PoolVector<uint8_t> array = p_array;
 
-void voxel_mesh_surface_set_material(RID p_mesh, int p_surface, RID p_material);
-RID voxel_mesh_surface_get_material(RID p_mesh, int p_surface) const;
+	VoxelMesh *mesh = voxel_mesh_owner.getornull(p_mesh);
+	ERR_FAIL_COND(!mesh);
 
-int voxel_mesh_surface_get_array_len(RID p_mesh, int p_surface) const;
-int voxel_mesh_surface_get_array_index_len(RID p_mesh, int p_surface) const;
+	const int stride = VS::VOXEL_VERTEX_STRIDE;
+	VoxelSurface::Attrib combined_attrib;
+	combined_attrib.index = 0;
+	combined_attrib.size = 3;
+	combined_attrib.offset = 0;
+	combined_attrib.type = GL_UNSIGNED_SHORT;
+	combined_attrib.stride = stride;
+	combined_attrib.normalized = GL_FALSE;
 
-PoolVector<uint8_t> voxel_mesh_surface_get_array(RID p_mesh, int p_surface) const;
-PoolVector<uint8_t> voxel_mesh_surface_get_index_array(RID p_mesh, int p_surface) const;
+	VoxelSurface::Attrib index_attrib;
+	index_attrib.index = 1;
+	index_attrib.size = 1;
+	index_attrib.offset = stride;
+	if (p_vertex_count >= (1 << 16)) {
+		index_attrib.type = GL_UNSIGNED_INT;
+		index_attrib.stride = 4;
+	} else {
+		index_attrib.type = GL_UNSIGNED_SHORT;
+		index_attrib.stride = 2;
+	}
+	index_attrib.normalized = GL_FALSE;
 
-VS::VoxelPrimitiveType voxel_mesh_surface_get_primitive_type(RID p_mesh, int p_surface) const;
+	//validate sizes
+	const int array_size = stride * p_vertex_count;
+	ERR_FAIL_COND(array.size() != array_size);
 
-AABB voxel_mesh_surface_get_aabb(RID p_mesh, int p_surface) const;
+	const int index_array_size = index_attrib.stride * p_index_count;
+	ERR_FAIL_COND(p_index_array.size() != index_array_size);
 
-void voxel_mesh_remove_surface(RID p_mesh, int p_surface);
-int voxel_mesh_get_surface_count(RID p_mesh) const;
+	//ok all valid, create stuff
 
-AABB voxel_mesh_get_aabb(RID p_mesh, RID p_skeleton) const;
-void voxel_mesh_clear(RID p_mesh);
+	VoxelSurface *surface = memnew(VoxelSurface);
+
+	surface->active = true;
+	surface->array_len = p_vertex_count;
+	surface->index_array_len = p_index_count;
+	surface->array_byte_size = array.size();
+	surface->index_array_byte_size = p_index_array.size();
+	surface->primitive = p_primitive;
+	surface->mesh = mesh;
+	surface->aabb = p_aabb;
+	surface->data = array;
+	surface->index_data = p_index_array;
+	surface->total_data_size += surface->array_byte_size + surface->index_array_byte_size;
+	surface->combined_attrib = combined_attrib;
+	surface->index_attrib = index_attrib;
+
+	// Okay, now the OpenGL stuff, wheeeeey \o/
+	{
+		PoolVector<uint8_t>::Read vr = array.read();
+
+		glGenBuffers(1, &surface->vertex_id);
+		glBindBuffer(GL_ARRAY_BUFFER, surface->vertex_id);
+		glBufferData(GL_ARRAY_BUFFER, array_size, vr.ptr(), GL_STATIC_DRAW);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+		{
+			PoolVector<uint8_t>::Read ir = p_index_array.read();
+
+			glGenBuffers(1, &surface->index_id);
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, surface->index_id);
+			glBufferData(GL_ELEMENT_ARRAY_BUFFER, index_array_size, ir.ptr(), GL_STATIC_DRAW);
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+		}
+	}
+
+	mesh->surfaces.push_back(surface);
+	mesh->instance_change_notify(true, true);
+
+	info.vertex_mem += surface->total_data_size;
+}
+
+void RasterizerStorageGLES2::voxel_mesh_surface_update_region(RID p_mesh, int p_surface, int p_offset, const PoolVector<uint8_t> &p_data) {
+	VoxelMesh *mesh = voxel_mesh_owner.getornull(p_mesh);
+
+	ERR_FAIL_COND(!mesh);
+	ERR_FAIL_INDEX(p_surface, mesh->surfaces.size());
+
+	int total_size = p_data.size();
+	ERR_FAIL_COND(p_offset + total_size > mesh->surfaces[p_surface]->array_byte_size);
+
+	PoolVector<uint8_t>::Read r = p_data.read();
+
+	glBindBuffer(GL_ARRAY_BUFFER, mesh->surfaces[p_surface]->vertex_id);
+	glBufferSubData(GL_ARRAY_BUFFER, p_offset, total_size, r.ptr());
+	glBindBuffer(GL_ARRAY_BUFFER, 0); //unbind
+}
+
+void RasterizerStorageGLES2::voxel_mesh_surface_set_material(RID p_mesh, int p_surface, RID p_material) {
+	VoxelMesh *mesh = voxel_mesh_owner.getornull(p_mesh);
+	ERR_FAIL_COND(!mesh);
+	ERR_FAIL_INDEX(p_surface, mesh->surfaces.size());
+
+	if (mesh->surfaces[p_surface]->material == p_material)
+		return;
+
+	if (mesh->surfaces[p_surface]->material.is_valid()) {
+		_material_remove_geometry(mesh->surfaces[p_surface]->material, mesh->surfaces[p_surface]);
+	}
+
+	mesh->surfaces[p_surface]->material = p_material;
+
+	if (mesh->surfaces[p_surface]->material.is_valid()) {
+		_material_add_geometry(mesh->surfaces[p_surface]->material, mesh->surfaces[p_surface]);
+	}
+
+	mesh->instance_change_notify(false, true);
+}
+RID RasterizerStorageGLES2::voxel_mesh_surface_get_material(RID p_mesh, int p_surface) const {
+	const VoxelMesh *mesh = voxel_mesh_owner.getornull(p_mesh);
+	ERR_FAIL_COND_V(!mesh, RID());
+	ERR_FAIL_INDEX_V(p_surface, mesh->surfaces.size(), RID());
+
+	return mesh->surfaces[p_surface]->material;
+}
+
+int RasterizerStorageGLES2::voxel_mesh_surface_get_array_len(RID p_mesh, int p_surface) const {
+	const VoxelMesh *mesh = voxel_mesh_owner.getornull(p_mesh);
+	ERR_FAIL_COND_V(!mesh, 0);
+	ERR_FAIL_INDEX_V(p_surface, mesh->surfaces.size(), 0);
+
+	return mesh->surfaces[p_surface]->array_len;
+}
+int RasterizerStorageGLES2::voxel_mesh_surface_get_array_index_len(RID p_mesh, int p_surface) const {
+	const VoxelMesh *mesh = voxel_mesh_owner.getornull(p_mesh);
+	ERR_FAIL_COND_V(!mesh, 0);
+	ERR_FAIL_INDEX_V(p_surface, mesh->surfaces.size(), 0);
+
+	return mesh->surfaces[p_surface]->index_array_len;
+}
+
+PoolVector<uint8_t> RasterizerStorageGLES2::voxel_mesh_surface_get_array(RID p_mesh, int p_surface) const {
+	const VoxelMesh *mesh = voxel_mesh_owner.getornull(p_mesh);
+	ERR_FAIL_COND_V(!mesh, PoolVector<uint8_t>());
+	ERR_FAIL_INDEX_V(p_surface, mesh->surfaces.size(), PoolVector<uint8_t>());
+
+	Surface *surface = mesh->surfaces[p_surface];
+
+	return surface->data;
+}
+PoolVector<uint8_t> RasterizerStorageGLES2::voxel_mesh_surface_get_index_array(RID p_mesh, int p_surface) const {
+	const VoxelMesh *mesh = voxel_mesh_owner.getornull(p_mesh);
+	ERR_FAIL_COND_V(!mesh, PoolVector<uint8_t>());
+	ERR_FAIL_INDEX_V(p_surface, mesh->surfaces.size(), PoolVector<uint8_t>());
+
+	Surface *surface = mesh->surfaces[p_surface];
+
+	return surface->index_data;
+}
+
+VoxelPrimitiveType RasterizerStorageGLES2::voxel_mesh_surface_get_primitive_type(RID p_mesh, int p_surface) const {
+	const VoxelMesh *mesh = voxel_mesh_owner.getornull(p_mesh);
+	ERR_FAIL_COND_V(!mesh, VS::PRIMITIVE_MAX);
+	ERR_FAIL_INDEX_V(p_surface, mesh->surfaces.size(), VS::PRIMITIVE_MAX);
+
+	return mesh->surfaces[p_surface]->primitive;
+}
+
+AABB RasterizerStorageGLES2::voxel_mesh_surface_get_aabb(RID p_mesh, int p_surface) const {
+	const VoxelMesh *mesh = voxel_mesh_owner.getornull(p_mesh);
+	ERR_FAIL_COND_V(!mesh, AABB());
+	ERR_FAIL_INDEX_V(p_surface, mesh->surfaces.size(), AABB());
+
+	return mesh->surfaces[p_surface]->aabb;
+}
+
+void RasterizerStorageGLES2::voxel_mesh_remove_surface(RID p_mesh, int p_index) {
+	VoxelMesh *mesh = voxel_mesh_owner.getornull(p_mesh);
+	ERR_FAIL_COND(!mesh);
+	ERR_FAIL_INDEX(p_surface, mesh->surfaces.size());
+
+	VoxelSurface *surface = mesh->surfaces[p_surface];
+
+	if (surface->material.is_valid()) {
+		_material_remove_geometry(surface->material, mesh->surfaces[p_surface]);
+	}
+
+	glDeleteBuffers(1, &surface->vertex_id);
+	if (surface->index_id) {
+		glDeleteBuffers(1, &surface->index_id);
+	}
+
+	for (int i = 0; i < surface->blend_shapes.size(); i++) {
+		glDeleteBuffers(1, &surface->blend_shapes[i].vertex_id);
+	}
+
+	info.vertex_mem -= surface->total_data_size;
+
+	memdelete(surface);
+
+	mesh->surfaces.remove(p_surface);
+
+	mesh->instance_change_notify(true, true);
+}
+int RasterizerStorageGLES2::voxel_mesh_get_surface_count(RID p_mesh) const {
+	const VoxelMesh *mesh = voxel_mesh_owner.getornull(p_mesh);
+	ERR_FAIL_COND_V(!mesh, 0);
+	return mesh->surfaces.size();
+}
+
+AABB RasterizerStorageGLES2::voxel_mesh_get_aabb(RID p_mesh, RID p_skeleton) const {
+	VoxelMesh *mesh = voxel_mesh_owner.get(p_mesh);
+	ERR_FAIL_COND_V(!mesh, AABB());
+
+	if (mesh->custom_aabb != AABB())
+		return mesh->custom_aabb;
+
+	Skeleton *sk = NULL;
+	if (p_skeleton.is_valid()) {
+		sk = skeleton_owner.get(p_skeleton);
+	}
+
+	AABB aabb;
+	for (int i = 0; i < mesh->surfaces.size(); i++) {
+		if (i == 0)
+			aabb = mesh->surfaces[i]->aabb;
+		else
+			aabb.merge_with(mesh->surfaces[i]->aabb);
+	}
+
+	return aabb;
+}
+void RasterizerStorageGLES2::voxel_mesh_clear(RID p_mesh) {
+	VoxelMesh *mesh = voxel_mesh_owner.getornull(p_mesh);
+	ERR_FAIL_COND(!mesh);
+
+	while (mesh->surfaces.size()) {
+		voxel_mesh_remove_surface(p_mesh, 0);
+	}
+}
 
 /* MESH API */
 
@@ -4587,6 +4805,10 @@ void RasterizerStorageGLES2::instance_add_dependency(RID p_base, RasterizerScene
 			inst = mesh_owner.getornull(p_base);
 			ERR_FAIL_COND(!inst);
 		} break;
+		case VS::INSTANCE_VOXEL: {
+			inst = voxel_mesh_owner.getornull(p_base);
+			ERR_FAIL_COND(!inst);
+		} break;
 		case VS::INSTANCE_MULTIMESH: {
 			inst = multimesh_owner.getornull(p_base);
 			ERR_FAIL_COND(!inst);
@@ -4630,6 +4852,10 @@ void RasterizerStorageGLES2::instance_remove_dependency(RID p_base, RasterizerSc
 	switch (p_instance->base_type) {
 		case VS::INSTANCE_MESH: {
 			inst = mesh_owner.getornull(p_base);
+			ERR_FAIL_COND(!inst);
+		} break;
+		case VS::INSTANCE_VOXEL: {
+			inst = voxel_mesh_owner.getornull(p_base);
 			ERR_FAIL_COND(!inst);
 		} break;
 		case VS::INSTANCE_MULTIMESH: {
@@ -5550,6 +5776,8 @@ VS::InstanceType RasterizerStorageGLES2::get_base_type(RID p_rid) const {
 
 	if (mesh_owner.owns(p_rid)) {
 		return VS::INSTANCE_MESH;
+	} else if (voxel_mesh_owner.owns(p_rid)) {
+		return VS::INSTANCE_VOXEL;
 	} else if (light_owner.owns(p_rid)) {
 		return VS::INSTANCE_LIGHT;
 	} else if (multimesh_owner.owns(p_rid)) {
