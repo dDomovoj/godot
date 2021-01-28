@@ -145,6 +145,32 @@ public:
 	FUNC2(material_set_line_width, RID, float)
 	FUNC2(material_set_next_pass, RID, RID)
 
+	/* VOXEL MESH API */
+
+	FUNCRID(voxel_mesh)
+
+	FUNC7(voxel_mesh_add_surface, RID, VoxelPrimitiveType, const PoolVector<uint8_t> &, int, const PoolVector<uint8_t> &, int, const AABB &)
+
+	FUNC4(voxel_mesh_surface_update_region, RID, int, int, const PoolVector<uint8_t> &)
+
+	FUNC3(voxel_mesh_surface_set_material, RID, int, RID)
+	FUNC2RC(RID, voxel_mesh_surface_get_material, RID, int)
+
+	FUNC2RC(int, voxel_mesh_surface_get_array_len, RID, int)
+	FUNC2RC(int, voxel_mesh_surface_get_array_index_len, RID, int)
+
+	FUNC2RC(PoolVector<uint8_t>, voxel_mesh_surface_get_array, RID, int)
+	FUNC2RC(PoolVector<uint8_t>, voxel_mesh_surface_get_index_array, RID, int)
+
+	FUNC2RC(VoxelPrimitiveType, voxel_mesh_surface_get_primitive_type, RID, int)
+
+	FUNC2RC(AABB, voxel_mesh_surface_get_aabb, RID, int)
+
+	FUNC2(voxel_mesh_remove_surface, RID, int)
+	FUNC1RC(int, voxel_mesh_get_surface_count, RID)
+
+	FUNC1(voxel_mesh_clear, RID)
+
 	/* MESH API */
 
 	FUNCRID(mesh)

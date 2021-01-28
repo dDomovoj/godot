@@ -209,6 +209,32 @@ public:
 	BIND2(material_set_line_width, RID, float)
 	BIND2(material_set_next_pass, RID, RID)
 
+	/* VOXEL MESH API */
+
+	BIND0R(RID, voxel_mesh_create)
+
+	BIND7(voxel_mesh_add_surface, RID, VoxelPrimitiveType, const PoolVector<uint8_t> &, int, const PoolVector<uint8_t> &, int, const AABB &)
+
+	BIND4(voxel_mesh_surface_update_region, RID, int, int, const PoolVector<uint8_t> &)
+
+	BIND3(voxel_mesh_surface_set_material, RID, int, RID)
+	BIND2RC(RID, voxel_mesh_surface_get_material, RID, int)
+
+	BIND2RC(int, voxel_mesh_surface_get_array_len, RID, int)
+	BIND2RC(int, voxel_mesh_surface_get_array_index_len, RID, int)
+
+	BIND2RC(PoolVector<uint8_t>, voxel_mesh_surface_get_array, RID, int)
+	BIND2RC(PoolVector<uint8_t>, voxel_mesh_surface_get_index_array, RID, int)
+
+	BIND2RC(VoxelPrimitiveType, voxel_mesh_surface_get_primitive_type, RID, int)
+
+	BIND2RC(AABB, voxel_mesh_surface_get_aabb, RID, int)
+
+	BIND2(voxel_mesh_remove_surface, RID, int)
+	BIND1RC(int, voxel_mesh_get_surface_count, RID)
+
+	BIND1(voxel_mesh_clear, RID)
+
 	/* MESH API */
 
 	BIND0R(RID, mesh_create)

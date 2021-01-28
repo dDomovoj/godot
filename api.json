@@ -6,7 +6,7 @@
 		"singleton": true,
 		"singleton_name": "GlobalConstants",
 		"instanciable": false,
-		"is_reference": true,
+		"is_reference": false,
 		"constants": {
 			"BUTTON_LEFT": 1,
 			"BUTTON_MASK_LEFT": 1,
@@ -170225,6 +170225,7 @@
 			"INSTANCE_NONE": 0,
 			"INSTANCE_PARTICLES": 4,
 			"INSTANCE_REFLECTION_PROBE": 7,
+			"INSTANCE_VOXEL": 5,
 			"LIGHT_DIRECTIONAL": 0,
 			"LIGHT_DIRECTIONAL_SHADOW_DEPTH_RANGE_OPTIMIZED": 1,
 			"LIGHT_DIRECTIONAL_SHADOW_DEPTH_RANGE_STABLE": 0,
@@ -170335,7 +170336,16 @@
 			"VIEWPORT_USAGE_2D": 0,
 			"VIEWPORT_USAGE_2D_NO_SAMPLING": 1,
 			"VIEWPORT_USAGE_3D": 2,
-			"VIEWPORT_USAGE_3D_NO_EFFECTS": 3
+			"VIEWPORT_USAGE_3D_NO_EFFECTS": 3,
+			"VOXEL_ARRAY_FORMAT_NORMAL": 2,
+			"VOXEL_ARRAY_FORMAT_TEX_UV": 4,
+			"VOXEL_ARRAY_FORMAT_VERTEX": 1,
+			"VOXEL_ARRAY_MAX": 4,
+			"VOXEL_ARRAY_NORMAL": 1,
+			"VOXEL_ARRAY_TEX_UV": 2,
+			"VOXEL_ARRAY_VERTEX": 0,
+			"VOXEL_PRIMITIVE_MAX": 1,
+			"VOXEL_PRIMITIVE_TRIANGLES": 0
 		},
 		"properties": [
 			{
@@ -179918,6 +179928,437 @@
 						"default_value": ""
 					}
 				]
+			},
+			{
+				"name": "voxel_mesh_add_surface_from_arrays",
+				"return_type": "void",
+				"is_editor": false,
+				"is_noscript": false,
+				"is_const": false,
+				"is_reverse": false,
+				"is_virtual": false,
+				"has_varargs": false,
+				"is_from_script": false,
+				"arguments": [
+					{
+						"name": "mesh",
+						"type": "RID",
+						"has_default_value": false,
+						"default_value": ""
+					},
+					{
+						"name": "primitive",
+						"type": "int",
+						"has_default_value": false,
+						"default_value": ""
+					},
+					{
+						"name": "arrays",
+						"type": "Array",
+						"has_default_value": false,
+						"default_value": ""
+					},
+					{
+						"name": "uv_size",
+						"type": "int",
+						"has_default_value": false,
+						"default_value": ""
+					}
+				]
+			},
+			{
+				"name": "voxel_mesh_clear",
+				"return_type": "void",
+				"is_editor": false,
+				"is_noscript": false,
+				"is_const": false,
+				"is_reverse": false,
+				"is_virtual": false,
+				"has_varargs": false,
+				"is_from_script": false,
+				"arguments": [
+					{
+						"name": "mesh",
+						"type": "RID",
+						"has_default_value": false,
+						"default_value": ""
+					}
+				]
+			},
+			{
+				"name": "voxel_mesh_create",
+				"return_type": "RID",
+				"is_editor": false,
+				"is_noscript": false,
+				"is_const": false,
+				"is_reverse": false,
+				"is_virtual": false,
+				"has_varargs": false,
+				"is_from_script": false,
+				"arguments": [
+				]
+			},
+			{
+				"name": "voxel_mesh_get_surface_count",
+				"return_type": "int",
+				"is_editor": false,
+				"is_noscript": false,
+				"is_const": true,
+				"is_reverse": false,
+				"is_virtual": false,
+				"has_varargs": false,
+				"is_from_script": false,
+				"arguments": [
+					{
+						"name": "mesh",
+						"type": "RID",
+						"has_default_value": false,
+						"default_value": ""
+					}
+				]
+			},
+			{
+				"name": "voxel_mesh_remove_surface",
+				"return_type": "void",
+				"is_editor": false,
+				"is_noscript": false,
+				"is_const": false,
+				"is_reverse": false,
+				"is_virtual": false,
+				"has_varargs": false,
+				"is_from_script": false,
+				"arguments": [
+					{
+						"name": "mesh",
+						"type": "RID",
+						"has_default_value": false,
+						"default_value": ""
+					},
+					{
+						"name": "index",
+						"type": "int",
+						"has_default_value": false,
+						"default_value": ""
+					}
+				]
+			},
+			{
+				"name": "voxel_mesh_surface_get_aabb",
+				"return_type": "AABB",
+				"is_editor": false,
+				"is_noscript": false,
+				"is_const": true,
+				"is_reverse": false,
+				"is_virtual": false,
+				"has_varargs": false,
+				"is_from_script": false,
+				"arguments": [
+					{
+						"name": "mesh",
+						"type": "RID",
+						"has_default_value": false,
+						"default_value": ""
+					},
+					{
+						"name": "surface",
+						"type": "int",
+						"has_default_value": false,
+						"default_value": ""
+					}
+				]
+			},
+			{
+				"name": "voxel_mesh_surface_get_array",
+				"return_type": "PoolByteArray",
+				"is_editor": false,
+				"is_noscript": false,
+				"is_const": true,
+				"is_reverse": false,
+				"is_virtual": false,
+				"has_varargs": false,
+				"is_from_script": false,
+				"arguments": [
+					{
+						"name": "mesh",
+						"type": "RID",
+						"has_default_value": false,
+						"default_value": ""
+					},
+					{
+						"name": "surface",
+						"type": "int",
+						"has_default_value": false,
+						"default_value": ""
+					}
+				]
+			},
+			{
+				"name": "voxel_mesh_surface_get_array_index_len",
+				"return_type": "int",
+				"is_editor": false,
+				"is_noscript": false,
+				"is_const": true,
+				"is_reverse": false,
+				"is_virtual": false,
+				"has_varargs": false,
+				"is_from_script": false,
+				"arguments": [
+					{
+						"name": "mesh",
+						"type": "RID",
+						"has_default_value": false,
+						"default_value": ""
+					},
+					{
+						"name": "surface",
+						"type": "int",
+						"has_default_value": false,
+						"default_value": ""
+					}
+				]
+			},
+			{
+				"name": "voxel_mesh_surface_get_array_len",
+				"return_type": "int",
+				"is_editor": false,
+				"is_noscript": false,
+				"is_const": true,
+				"is_reverse": false,
+				"is_virtual": false,
+				"has_varargs": false,
+				"is_from_script": false,
+				"arguments": [
+					{
+						"name": "mesh",
+						"type": "RID",
+						"has_default_value": false,
+						"default_value": ""
+					},
+					{
+						"name": "surface",
+						"type": "int",
+						"has_default_value": false,
+						"default_value": ""
+					}
+				]
+			},
+			{
+				"name": "voxel_mesh_surface_get_arrays",
+				"return_type": "Array",
+				"is_editor": false,
+				"is_noscript": false,
+				"is_const": true,
+				"is_reverse": false,
+				"is_virtual": false,
+				"has_varargs": false,
+				"is_from_script": false,
+				"arguments": [
+					{
+						"name": "mesh",
+						"type": "RID",
+						"has_default_value": false,
+						"default_value": ""
+					},
+					{
+						"name": "surface",
+						"type": "int",
+						"has_default_value": false,
+						"default_value": ""
+					}
+				]
+			},
+			{
+				"name": "voxel_mesh_surface_get_index_array",
+				"return_type": "PoolByteArray",
+				"is_editor": false,
+				"is_noscript": false,
+				"is_const": true,
+				"is_reverse": false,
+				"is_virtual": false,
+				"has_varargs": false,
+				"is_from_script": false,
+				"arguments": [
+					{
+						"name": "mesh",
+						"type": "RID",
+						"has_default_value": false,
+						"default_value": ""
+					},
+					{
+						"name": "surface",
+						"type": "int",
+						"has_default_value": false,
+						"default_value": ""
+					}
+				]
+			},
+			{
+				"name": "voxel_mesh_surface_get_index_offset",
+				"return_type": "int",
+				"is_editor": false,
+				"is_noscript": false,
+				"is_const": true,
+				"is_reverse": false,
+				"is_virtual": false,
+				"has_varargs": false,
+				"is_from_script": false,
+				"arguments": [
+					{
+						"name": "vertex_len",
+						"type": "int",
+						"has_default_value": false,
+						"default_value": ""
+					},
+					{
+						"name": "index_len",
+						"type": "int",
+						"has_default_value": false,
+						"default_value": ""
+					}
+				]
+			},
+			{
+				"name": "voxel_mesh_surface_get_material",
+				"return_type": "RID",
+				"is_editor": false,
+				"is_noscript": false,
+				"is_const": true,
+				"is_reverse": false,
+				"is_virtual": false,
+				"has_varargs": false,
+				"is_from_script": false,
+				"arguments": [
+					{
+						"name": "mesh",
+						"type": "RID",
+						"has_default_value": false,
+						"default_value": ""
+					},
+					{
+						"name": "surface",
+						"type": "int",
+						"has_default_value": false,
+						"default_value": ""
+					}
+				]
+			},
+			{
+				"name": "voxel_mesh_surface_get_primitive_type",
+				"return_type": "enum.VisualServer::VoxelPrimitiveType",
+				"is_editor": false,
+				"is_noscript": false,
+				"is_const": true,
+				"is_reverse": false,
+				"is_virtual": false,
+				"has_varargs": false,
+				"is_from_script": false,
+				"arguments": [
+					{
+						"name": "mesh",
+						"type": "RID",
+						"has_default_value": false,
+						"default_value": ""
+					},
+					{
+						"name": "surface",
+						"type": "int",
+						"has_default_value": false,
+						"default_value": ""
+					}
+				]
+			},
+			{
+				"name": "voxel_mesh_surface_get_stride",
+				"return_type": "int",
+				"is_editor": false,
+				"is_noscript": false,
+				"is_const": true,
+				"is_reverse": false,
+				"is_virtual": false,
+				"has_varargs": false,
+				"is_from_script": false,
+				"arguments": [
+					{
+						"name": "vertex_len",
+						"type": "int",
+						"has_default_value": false,
+						"default_value": ""
+					},
+					{
+						"name": "index_len",
+						"type": "int",
+						"has_default_value": false,
+						"default_value": ""
+					}
+				]
+			},
+			{
+				"name": "voxel_mesh_surface_set_material",
+				"return_type": "void",
+				"is_editor": false,
+				"is_noscript": false,
+				"is_const": false,
+				"is_reverse": false,
+				"is_virtual": false,
+				"has_varargs": false,
+				"is_from_script": false,
+				"arguments": [
+					{
+						"name": "mesh",
+						"type": "RID",
+						"has_default_value": false,
+						"default_value": ""
+					},
+					{
+						"name": "surface",
+						"type": "int",
+						"has_default_value": false,
+						"default_value": ""
+					},
+					{
+						"name": "material",
+						"type": "RID",
+						"has_default_value": false,
+						"default_value": ""
+					}
+				]
+			},
+			{
+				"name": "voxel_mesh_surface_update_region",
+				"return_type": "void",
+				"is_editor": false,
+				"is_noscript": false,
+				"is_const": false,
+				"is_reverse": false,
+				"is_virtual": false,
+				"has_varargs": false,
+				"is_from_script": false,
+				"arguments": [
+					{
+						"name": "mesh",
+						"type": "RID",
+						"has_default_value": false,
+						"default_value": ""
+					},
+					{
+						"name": "surface",
+						"type": "int",
+						"has_default_value": false,
+						"default_value": ""
+					},
+					{
+						"name": "offset",
+						"type": "int",
+						"has_default_value": false,
+						"default_value": ""
+					},
+					{
+						"name": "data",
+						"type": "PoolByteArray",
+						"has_default_value": false,
+						"default_value": ""
+					}
+				]
 			}
 		],
 		"enums": [
@@ -180105,6 +180546,14 @@
 				}
 			},
 			{
+				"name": "VoxelArrayFormat",
+				"values": {
+					"VOXEL_ARRAY_FORMAT_VERTEX": 1,
+					"VOXEL_ARRAY_FORMAT_NORMAL": 2,
+					"VOXEL_ARRAY_FORMAT_TEX_UV": 4
+				}
+			},
+			{
 				"name": "TextureFlags",
 				"values": {
 					"TEXTURE_FLAG_MIPMAPS": 1,
@@ -180132,12 +180581,22 @@
 					"INSTANCE_MULTIMESH": 2,
 					"INSTANCE_IMMEDIATE": 3,
 					"INSTANCE_PARTICLES": 4,
+					"INSTANCE_VOXEL": 5,
 					"INSTANCE_LIGHT": 6,
 					"INSTANCE_REFLECTION_PROBE": 7,
 					"INSTANCE_GI_PROBE": 8,
 					"INSTANCE_LIGHTMAP_CAPTURE": 9,
 					"INSTANCE_MAX": 10,
 					"INSTANCE_GEOMETRY_MASK": 62
+				}
+			},
+			{
+				"name": "VoxelArrayType",
+				"values": {
+					"VOXEL_ARRAY_VERTEX": 0,
+					"VOXEL_ARRAY_NORMAL": 1,
+					"VOXEL_ARRAY_TEX_UV": 2,
+					"VOXEL_ARRAY_MAX": 4
 				}
 			},
 			{
@@ -180288,6 +180747,13 @@
 					"ARRAY_WEIGHTS": 7,
 					"ARRAY_INDEX": 8,
 					"ARRAY_MAX": 9
+				}
+			},
+			{
+				"name": "VoxelPrimitiveType",
+				"values": {
+					"VOXEL_PRIMITIVE_TRIANGLES": 0,
+					"VOXEL_PRIMITIVE_MAX": 1
 				}
 			},
 			{
@@ -184483,11 +184949,15 @@
 		"instanciable": true,
 		"is_reference": true,
 		"constants": {
-			"ARRAY_INDEX": 3,
-			"ARRAY_MAX": 4,
-			"ARRAY_NORMAL": 1,
-			"ARRAY_TEX_UV": 2,
-			"ARRAY_VERTEX": 0
+			"VOXEL_ARRAY_FORMAT_INDEX": 8,
+			"VOXEL_ARRAY_FORMAT_NORMAL": 2,
+			"VOXEL_ARRAY_FORMAT_TEX_UV": 4,
+			"VOXEL_ARRAY_FORMAT_VERTEX": 1,
+			"VOXEL_ARRAY_INDEX": 3,
+			"VOXEL_ARRAY_MAX": 4,
+			"VOXEL_ARRAY_NORMAL": 1,
+			"VOXEL_ARRAY_TEX_UV": 2,
+			"VOXEL_ARRAY_VERTEX": 0
 		},
 		"properties": [
 		],
@@ -184506,8 +184976,20 @@
 				"is_from_script": false,
 				"arguments": [
 					{
+						"name": "primitive",
+						"type": "int",
+						"has_default_value": false,
+						"default_value": ""
+					},
+					{
 						"name": "arrays",
 						"type": "Array",
+						"has_default_value": false,
+						"default_value": ""
+					},
+					{
+						"name": "uv_size",
+						"type": "int",
 						"has_default_value": false,
 						"default_value": ""
 					}
@@ -184540,6 +185022,25 @@
 				]
 			},
 			{
+				"name": "surface_find_by_name",
+				"return_type": "int",
+				"is_editor": false,
+				"is_noscript": false,
+				"is_const": true,
+				"is_reverse": false,
+				"is_virtual": false,
+				"has_varargs": false,
+				"is_from_script": false,
+				"arguments": [
+					{
+						"name": "name",
+						"type": "String",
+						"has_default_value": false,
+						"default_value": ""
+					}
+				]
+			},
+			{
 				"name": "surface_get_arrays",
 				"return_type": "Array",
 				"is_editor": false,
@@ -184561,6 +185062,25 @@
 			{
 				"name": "surface_get_material",
 				"return_type": "Material",
+				"is_editor": false,
+				"is_noscript": false,
+				"is_const": true,
+				"is_reverse": false,
+				"is_virtual": false,
+				"has_varargs": false,
+				"is_from_script": false,
+				"arguments": [
+					{
+						"name": "surf_idx",
+						"type": "int",
+						"has_default_value": false,
+						"default_value": ""
+					}
+				]
+			},
+			{
+				"name": "surface_get_name",
+				"return_type": "String",
 				"is_editor": false,
 				"is_noscript": false,
 				"is_const": true,
@@ -184620,17 +185140,51 @@
 						"default_value": ""
 					}
 				]
+			},
+			{
+				"name": "surface_set_name",
+				"return_type": "void",
+				"is_editor": false,
+				"is_noscript": false,
+				"is_const": false,
+				"is_reverse": false,
+				"is_virtual": false,
+				"has_varargs": false,
+				"is_from_script": false,
+				"arguments": [
+					{
+						"name": "surf_idx",
+						"type": "int",
+						"has_default_value": false,
+						"default_value": ""
+					},
+					{
+						"name": "name",
+						"type": "String",
+						"has_default_value": false,
+						"default_value": ""
+					}
+				]
 			}
 		],
 		"enums": [
 			{
-				"name": "ArrayType",
+				"name": "VoxelArrayFormat",
 				"values": {
-					"ARRAY_VERTEX": 0,
-					"ARRAY_NORMAL": 1,
-					"ARRAY_TEX_UV": 2,
-					"ARRAY_INDEX": 3,
-					"ARRAY_MAX": 4
+					"VOXEL_ARRAY_FORMAT_VERTEX": 1,
+					"VOXEL_ARRAY_FORMAT_NORMAL": 2,
+					"VOXEL_ARRAY_FORMAT_TEX_UV": 4,
+					"VOXEL_ARRAY_FORMAT_INDEX": 8
+				}
+			},
+			{
+				"name": "VoxelArrayType",
+				"values": {
+					"VOXEL_ARRAY_VERTEX": 0,
+					"VOXEL_ARRAY_NORMAL": 1,
+					"VOXEL_ARRAY_TEX_UV": 2,
+					"VOXEL_ARRAY_INDEX": 3,
+					"VOXEL_ARRAY_MAX": 4
 				}
 			}
 		]
@@ -184648,7 +185202,7 @@
 		"properties": [
 			{
 				"name": "mesh",
-				"type": "Mesh",
+				"type": "VoxelMesh",
 				"getter": "get_mesh",
 				"setter": "set_mesh",
 				"index": -1

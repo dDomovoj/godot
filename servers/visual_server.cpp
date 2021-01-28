@@ -2032,7 +2032,6 @@ void VisualServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("voxel_mesh_create"), &VisualServer::voxel_mesh_create);
 	ClassDB::bind_method(D_METHOD("voxel_mesh_surface_get_index_offset", "vertex_len", "index_len"), &VisualServer::voxel_mesh_surface_get_index_offset);
 	ClassDB::bind_method(D_METHOD("voxel_mesh_surface_get_stride", "vertex_len", "index_len"), &VisualServer::voxel_mesh_surface_get_stride);
-	ClassDB::bind_method(D_METHOD("voxel_mesh_surface_make_offsets", "vertex_len", "index_len", "offsets"), &VisualServer::voxel_mesh_surface_make_offsets);
 	ClassDB::bind_method(D_METHOD("voxel_mesh_add_surface_from_arrays", "mesh", "primitive", "arrays", "uv_size"), &VisualServer::voxel_mesh_add_surface_from_arrays);
 	ClassDB::bind_method(D_METHOD("voxel_mesh_surface_update_region", "mesh", "surface", "offset", "data"), &VisualServer::voxel_mesh_surface_update_region);
 	ClassDB::bind_method(D_METHOD("voxel_mesh_surface_set_material", "mesh", "surface", "material"), &VisualServer::voxel_mesh_surface_set_material);

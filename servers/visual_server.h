@@ -279,7 +279,7 @@ public:
 
 	virtual AABB voxel_mesh_surface_get_aabb(RID p_mesh, int p_surface) const = 0;
 
-	virtual void voxel_mesh_remove_surface(RID p_mesh, int p_index) = 0;
+	virtual void voxel_mesh_remove_surface(RID p_mesh, int p_surface) = 0;
 	virtual int voxel_mesh_get_surface_count(RID p_mesh) const = 0;
 
 	virtual void voxel_mesh_clear(RID p_mesh) = 0;
