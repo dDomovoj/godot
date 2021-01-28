@@ -2248,8 +2248,10 @@ void RasterizerSceneGLES2::_render_render_list(RenderList::Element **p_elements,
 
 	bool prev_unshaded = false;
 	bool prev_instancing = false;
+	bool prev_is_voxel = false;
 	bool prev_depth_prepass = false;
 	state.scene_shader.set_conditional(SceneShaderGLES2::SHADELESS, false);
+	// state.scene_shader.set_conditional(SceneShaderGLES2::ENABLE_VOXEL, false);
 	RasterizerStorageGLES2::Material *prev_material = NULL;
 	RasterizerStorageGLES2::Geometry *prev_geometry = NULL;
 	RasterizerStorageGLES2::Skeleton *prev_skeleton = NULL;
@@ -2490,6 +2492,14 @@ void RasterizerSceneGLES2::_render_render_list(RenderList::Element **p_elements,
 			rebind = true;
 		}
 
+		bool is_voxel = e->instance->base_type == VS::INSTANCE_VOXEL;
+
+		if (is_voxel != prev_is_voxel) {
+
+			state.scene_shader.set_conditional(SceneShaderGLES2::ENABLE_VOXEL, instancing);
+			rebind = true;
+		}
+
 		RasterizerStorageGLES2::Skeleton *skeleton = storage->skeleton_owner.getornull(e->instance->skeleton);
 
 		if (skeleton != prev_skeleton) {
@@ -2626,6 +2636,7 @@ void RasterizerSceneGLES2::_render_render_list(RenderList::Element **p_elements,
 		prev_material = material;
 		prev_skeleton = skeleton;
 		prev_instancing = instancing;
+		prev_is_voxel = is_voxel;
 		prev_light = light;
 		prev_refprobe_1 = refprobe_1;
 		prev_refprobe_2 = refprobe_2;
@@ -2638,6 +2649,7 @@ void RasterizerSceneGLES2::_render_render_list(RenderList::Element **p_elements,
 	state.scene_shader.set_conditional(SceneShaderGLES2::SHADELESS, false);
 	state.scene_shader.set_conditional(SceneShaderGLES2::BASE_PASS, false);
 	state.scene_shader.set_conditional(SceneShaderGLES2::USE_INSTANCING, false);
+	state.scene_shader.set_conditional(SceneShaderGLES2::ENABLE_VOXEL, false);
 	state.scene_shader.set_conditional(SceneShaderGLES2::USE_RADIANCE_MAP, false);
 	state.scene_shader.set_conditional(SceneShaderGLES2::LIGHT_USE_PSSM4, false);
 	state.scene_shader.set_conditional(SceneShaderGLES2::LIGHT_USE_PSSM2, false);
