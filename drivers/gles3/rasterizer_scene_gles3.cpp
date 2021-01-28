@@ -2048,9 +2048,11 @@ void RasterizerSceneGLES3::_render_list(RenderList::Element **p_elements, int p_
 	RasterizerStorageGLES3::Skeleton *prev_skeleton = NULL;
 
 	state.scene_shader.set_conditional(SceneShaderGLES3::SHADELESS, true); //by default unshaded (easier to set)
+	// state.scene_shader.set_conditional(SceneShaderGLES3::ENABLE_VOXEL, false); //by default not voxel (easier to set)
 
 	bool first = true;
 	bool prev_use_instancing = false;
+	bool prev_is_voxel = false;
 
 	storage->info.render.draw_call_count += p_element_count;
 	bool prev_opaque_prepass = false;
@@ -2208,6 +2210,13 @@ void RasterizerSceneGLES3::_render_list(RenderList::Element **p_elements, int p_
 			rebind = true;
 		}
 
+		bool is_voxel = e->instance->base_type == VS::INSTANCE_VOXEL;
+
+		if (is_voxel != prev_is_voxel) {
+			state.scene_shader.set_conditional(SceneShaderGLES3::ENABLE_VOXEL, is_voxel);
+			rebind = true;
+		}
+
 		if (prev_skeleton != skeleton) {
 			if ((prev_skeleton == NULL) != (skeleton == NULL)) {
 				state.scene_shader.set_conditional(SceneShaderGLES3::USE_SKELETON, skeleton != NULL);
@@ -2254,12 +2263,14 @@ void RasterizerSceneGLES3::_render_list(RenderList::Element **p_elements, int p_
 		prev_shading = shading;
 		prev_skeleton = skeleton;
 		prev_use_instancing = use_instancing;
+		prev_is_voxel = is_voxel;
 		prev_opaque_prepass = use_opaque_prepass;
 		first = false;
 	}
 
 	glBindVertexArray(0);
 
+	state.scene_shader.set_conditional(SceneShaderGLES3::ENABLE_VOXEL, false);
 	state.scene_shader.set_conditional(SceneShaderGLES3::USE_INSTANCING, false);
 	state.scene_shader.set_conditional(SceneShaderGLES3::USE_SKELETON, false);
 	state.scene_shader.set_conditional(SceneShaderGLES3::USE_RADIANCE_MAP, false);
