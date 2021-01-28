@@ -24,6 +24,20 @@ ARRAY_INDEX=8,
 /* INPUT ATTRIBS */
 
 #if defined(ENABLE_VOXEL)
+
+/*
+from VisualServer:
+			|  7 |  6 |  5 |  4 |  3 |  2 |  1 |  0 |
+ 	--------+---------------------------------------|
+	(0)		|    |    |    |    |    | n2 | n1 | n0 |
+	(1)		| x7 | x6 | x5 | x4 | x3 | x2 | x1 | x0 |
+	(2)		| y7 | y6 | y5 | y4 | y3 | y2 | y1 | y0 |
+	(3)		| z7 | z6 | z5 | z4 | z3 | z2 | z1 | z0 |
+	(4) 	|    |    |    |uvx3|uvx3|uvx2|uvx1|uvx0|
+	(5)		|uvs2|uvs1|uvs1|uvy4|uvy3|uvy2|uvy1|uvy0|
+ 	--------+---------------------------------------|
+*/
+
 layout(location = 0) in highp uvec3 voxel_attrib;
 #else
 layout(location = 0) in highp vec4 vertex_attrib;
@@ -311,19 +325,29 @@ uniform highp sampler2D skeleton_texture; // texunit:-1
 #endif
 
 #ifdef ENABLE_VOXEL
-vec2 voxel_uv[4] = vec2[4](
-    vec2(0.0f, 0.0f),
-    vec2(0.0f, 1.0f),
-    vec2(1.0f, 0.0f),
-    vec2(1.0f, 1.0f)
-);
-vec3 voxel_n[6] = vec3[6](
-	vec3(-1.0f, 0.0f, 0.0f),
+// vec2 voxel_uv[4] = vec2[4](
+//     vec2(0.0f, 0.0f),
+//     vec2(0.0f, 1.0f),
+//     vec2(1.0f, 0.0f),
+//     vec2(1.0f, 1.0f)
+// );
+vec3 voxel_normals_lookup_table[6] = vec3[6](
 	vec3(1.0f, 0.0f, 0.0f),
-	vec3(0.0f, -1.0f, 0.0f),
+	vec3(-1.0f, 0.0f, 0.0f),
 	vec3(0.0f, 1.0f, 0.0f),
-	vec3(0.0f, 0.0f, -1.0f),
+	vec3(0.0f, -1.0f, 0.0f),
 	vec3(0.0f, 0.0f, 1.0f),
+	vec3(0.0f, 0.0f, -1.0f),
+);
+float voxel_uv_size_lookup_table[8] = float[8](
+	1.0,
+	0.5,
+	0.25,
+	0.125,
+	0.0625,
+	0.03125,
+	0.015625,
+	0.0078125,
 );
 #endif
 
@@ -336,9 +360,9 @@ out highp vec4 position_interp;
 void main() {
 
 #if defined(ENABLE_VOXEL)
-	float voxel_vx = float(voxel_attrib.x & 0xFFu);
-    float voxel_vy = float(voxel_attrib.x & 0xFF00u) >> 8u);
-    float voxel_vz = float(voxel_attrib.y & 0xFFu);
+	float voxel_vx = float((voxel_attrib.x & 0xFF00u) >> 8u);
+    float voxel_vy = float(voxel_attrib.y & 0xFFFFu);
+    float voxel_vz = float((voxel_attrib.y & 0xFF00u) >> 8u);
 	highp vec4 vertex = vec4(voxel_vx, voxel_vy, voxel_vz, 1.0);
 #else
 	highp vec4 vertex = vertex_attrib; // vec4(vertex_attrib.xyz * data_attrib.x,1.0);
@@ -355,8 +379,8 @@ void main() {
 #endif
 
 #if defined(ENABLE_VOXEL)
-	uint voxel_normal_idx = (voxel_attrib.y & 0x700u) >> 8u;
-	vec3 normal = voxel_n[voxel_normal_idx)];
+	uint voxel_normal_idx = voxel_attrib.x & 0x7u;
+	vec3 normal = voxel_normals_lookup_table[voxel_normal_idx)];
 #else
 	vec3 normal = normal_attrib;
 #endif
@@ -384,11 +408,10 @@ void main() {
 #endif
 
 #if defined(ENABLE_VOXEL)
-	float voxel_uv_size = float(1u >> ((voxel_attrib.z & 0x300u) >> 8u));
-	float voxel_uv_x = float(voxel_attrib.z & 0xFu) / voxel_uv_size;
-	float voxel_uv_y = float((voxel_attrib.z & 0xF0u) >> 4u) / voxel_uv_size;
-	uint voxel_uv_idx = (voxel_attrib.z & 0xC00u) >> 10u;
-	uv_interp = voxel_uv[voxel_uv_idx] + vec2(voxel_uv_x, voxel_uv_y);
+	float voxel_uv_mul = voxel_uv_size_lookup_table[(voxel_attrib.z & 0x3000u) >> 12u];
+	float voxel_uv_x = float(voxel_attrib.z & 0x1Fu) * voxel_uv_size;
+	float voxel_uv_y = float((voxel_attrib.z & 0x1F00u) >> 8u) * voxel_uv_size;
+	uv_interp = vec2(voxel_uv_x, voxel_uv_y);
 #endif
 
 #if defined(ENABLE_UV2_INTERP) || defined(USE_LIGHTMAP)

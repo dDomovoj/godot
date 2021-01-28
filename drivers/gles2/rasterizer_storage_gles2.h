@@ -630,7 +630,9 @@ public:
 			uint32_t offset;
 		};
 
-		Attrib attribs[VS::VOXEL_ARRAY_MAX];
+		Attrib combined_attrib;
+		Attrib index_attrib;
+		// Attrib attribs[VS::VOXEL_ARRAY_MAX];
 
 		VoxelMesh *mesh;
 		// uint32_t format;
@@ -655,7 +657,7 @@ public:
 
 		int total_data_size;
 
-		Surface() :
+		VoxelSurface() :
 				mesh(NULL),
 				array_len(0),
 				index_array_len(0),
@@ -673,7 +675,7 @@ public:
 
 		Vector<VoxelSurface *> surfaces;
 
-		AABB custom_aabb;
+		// AABB custom_aabb;
 
 		mutable uint64_t last_pass;
 
@@ -697,11 +699,11 @@ public:
 	virtual PoolVector<uint8_t> voxel_mesh_surface_get_array(RID p_mesh, int p_surface) const;
 	virtual PoolVector<uint8_t> voxel_mesh_surface_get_index_array(RID p_mesh, int p_surface) const;
 
-	virtual VS::VoxelPrimitiveType voxel_mesh_surface_get_primitive_type(RID p_mesh, int p_surface) const;
+	virtual VoxelPrimitiveType voxel_mesh_surface_get_primitive_type(RID p_mesh, int p_surface) const;
 
 	virtual AABB voxel_mesh_surface_get_aabb(RID p_mesh, int p_surface) const;
 
-	virtual void voxel_mesh_remove_surface(RID p_mesh, int p_surface);
+	virtual void voxel_mesh_remove_surface(RID p_mesh, int p_index);
 	virtual int voxel_mesh_get_surface_count(RID p_mesh) const;
 
 	virtual AABB voxel_mesh_get_aabb(RID p_mesh, RID p_skeleton) const;

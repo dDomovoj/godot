@@ -452,6 +452,7 @@ void VisualServerScene::instance_set_base(RID p_instance, RID p_base) {
 				instance->base_data = light;
 			} break;
 			case VS::INSTANCE_MESH:
+			case VS::INSTANCE_VOXEL:
 			case VS::INSTANCE_MULTIMESH:
 			case VS::INSTANCE_IMMEDIATE:
 			case VS::INSTANCE_PARTICLES: {
@@ -638,6 +639,9 @@ void VisualServerScene::instance_set_surface_material(RID p_instance, int p_surf
 		//may not have been updated yet
 		instance->materials.resize(VSG::storage->mesh_get_surface_count(instance->base));
 	}
+	if (instance->base_type == VS::INSTANCE_VOXEL) {
+		instance->materials.resize(VSG::storage->voxel_mesh_get_surface_count(instance->base));
+	}
 
 	ERR_FAIL_INDEX(p_surface, instance->materials.size());
 
@@ -692,7 +696,7 @@ void VisualServerScene::instance_set_visible(RID p_instance, bool p_visible) {
 	}
 }
 inline bool is_geometry_instance(VisualServer::InstanceType p_type) {
-	return p_type == VS::INSTANCE_MESH || p_type == VS::INSTANCE_MULTIMESH || p_type == VS::INSTANCE_PARTICLES || p_type == VS::INSTANCE_IMMEDIATE;
+	return p_type == VS::INSTANCE_MESH || p_type == VS::INSTANCE_VOXEL || p_type == VS::INSTANCE_MULTIMESH || p_type == VS::INSTANCE_PARTICLES || p_type == VS::INSTANCE_IMMEDIATE;
 }
 
 void VisualServerScene::instance_set_use_lightmap(RID p_instance, RID p_lightmap_instance, RID p_lightmap) {
@@ -1013,7 +1017,11 @@ void VisualServerScene::_update_instance_aabb(Instance *p_instance) {
 				new_aabb = VSG::storage->mesh_get_aabb(p_instance->base, p_instance->skeleton);
 
 		} break;
+		case VisualServer::INSTANCE_VOXEL: {
 
+			new_aabb = VSG::storage->voxel_mesh_get_aabb(p_instance->base, p_instance->skeleton);
+
+		} break;
 		case VisualServer::INSTANCE_MULTIMESH: {
 
 			if (p_instance->custom_aabb)
@@ -3313,6 +3321,17 @@ void VisualServerScene::_update_dirty_instance(Instance *p_instance) {
 				}
 			}
 		}
+		if (p_instance->base_type == VS::INSTANCE_VOXEL) {
+			//remove materials no longer used and un-own them
+
+			int new_mat_count = VSG::storage->voxel_mesh_get_surface_count(p_instance->base);
+			for (int i = p_instance->materials.size() - 1; i >= new_mat_count; i--) {
+				if (p_instance->materials[i].is_valid()) {
+					VSG::storage->material_remove_instance_owner(p_instance->materials[i], p_instance);
+				}
+			}
+			p_instance->materials.resize(new_mat_count);
+		}
 
 		if ((1 << p_instance->base_type) & VS::INSTANCE_GEOMETRY_MASK) {
 
@@ -3337,6 +3356,35 @@ void VisualServerScene::_update_dirty_instance(Instance *p_instance) {
 						for (int i = 0; i < p_instance->materials.size(); i++) {
 
 							RID mat = p_instance->materials[i].is_valid() ? p_instance->materials[i] : VSG::storage->mesh_surface_get_material(mesh, i);
+
+							if (!mat.is_valid()) {
+								cast_shadows = true;
+							} else {
+
+								if (VSG::storage->material_casts_shadows(mat)) {
+									cast_shadows = true;
+								}
+
+								if (VSG::storage->material_is_animated(mat)) {
+									is_animated = true;
+								}
+							}
+						}
+
+						if (!cast_shadows) {
+							can_cast_shadows = false;
+						}
+					}
+
+				} else if (p_instance->base_type == VS::INSTANCE_VOXEL) {
+					RID mesh = p_instance->base;
+
+					if (mesh.is_valid()) {
+						bool cast_shadows = false;
+
+						for (int i = 0; i < p_instance->materials.size(); i++) {
+
+							RID mat = p_instance->materials[i].is_valid() ? p_instance->materials[i] : VSG::storage->voxel_mesh_surface_get_material(mesh, i);
 
 							if (!mat.is_valid()) {
 								cast_shadows = true;

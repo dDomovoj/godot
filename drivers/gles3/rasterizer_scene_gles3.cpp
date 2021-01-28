@@ -1315,6 +1315,13 @@ void RasterizerSceneGLES3::_setup_geometry(RenderList::Element *e, const Transfo
 
 	switch (e->instance->base_type) {
 
+		case VS::INSTANCE_VOXEL: {
+
+			RasterizerStorageGLES3::VoxelSurface *s = static_cast<RasterizerStorageGLES3::VoxelSurface *>(e->geometry);
+			glBindVertexArray(s->array_id); // everything is so easy nowadays
+
+		} break;
+
 		case VS::INSTANCE_MESH: {
 
 			RasterizerStorageGLES3::Surface *s = static_cast<RasterizerStorageGLES3::Surface *>(e->geometry);
@@ -1518,9 +1525,23 @@ static const GLenum gl_primitive[] = {
 	GL_TRIANGLE_FAN
 };
 
+static const GLenum gl_voxel_primitive[] = {
+	GL_TRIANGLES,
+};
+
 void RasterizerSceneGLES3::_render_geometry(RenderList::Element *e) {
 
 	switch (e->instance->base_type) {
+
+		case VS::INSTANCE_VOXEL: {
+			
+			RasterizerStorageGLES3::VoxelSurface *s = static_cast<RasterizerStorageGLES3::VoxelSurface *>(e->geometry);
+
+			glDrawElements(gl_voxel_primitive[s->primitive], s->index_array_len, (s->array_len >= (1 << 16)) ? GL_UNSIGNED_INT : GL_UNSIGNED_SHORT, 0);
+
+			storage->info.render.vertices_count += s->index_array_len;
+
+		} break;
 
 		case VS::INSTANCE_MESH: {
 
@@ -3139,6 +3160,24 @@ void RasterizerSceneGLES3::_fill_render_list(InstanceBase **p_cull_result, int p
 
 		InstanceBase *inst = p_cull_result[i];
 		switch (inst->base_type) {
+
+			case VS::INSTANCE_VOXEL: {
+
+				RasterizerStorageGLES3::VoxelMesh *mesh = storage->voxel_mesh_owner.getptr(inst->base);
+				ERR_CONTINUE(!mesh);
+
+				int ssize = mesh->surfaces.size();
+
+				for (int j = 0; j < ssize; j++) {
+
+					int mat_idx = inst->materials[j].is_valid() ? j : -1;
+					RasterizerStorageGLES3::VoxelSurface *s = mesh->surfaces[j];
+					_add_geometry(s, inst, NULL, mat_idx, p_depth_pass, p_shadow_pass);
+				}
+
+				//mesh->last_pass=frame;
+
+			} break;
 
 			case VS::INSTANCE_MESH: {
 

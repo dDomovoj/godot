@@ -1219,6 +1219,23 @@ void RasterizerSceneGLES2::_fill_render_list(InstanceBase **p_cull_result, int p
 
 		switch (instance->base_type) {
 
+			case VS::INSTANCE_VOXEL: {
+
+				RasterizerStorageGLES2::VoxelMesh *mesh = storage->voxel_mesh_owner.getornull(instance->base);
+				ERR_CONTINUE(!mesh);
+
+				int num_surfaces = mesh->surfaces.size();
+
+				for (int j = 0; j < num_surfaces; j++) {
+					int material_index = instance->materials[j].is_valid() ? j : -1;
+
+					RasterizerStorageGLES2::VoxelSurface *surface = mesh->surfaces[j];
+
+					_add_geometry(surface, instance, NULL, material_index, p_depth_pass, p_shadow_pass);
+				}
+
+			} break;
+
 			case VS::INSTANCE_MESH: {
 
 				RasterizerStorageGLES2::Mesh *mesh = storage->mesh_owner.getornull(instance->base);
@@ -1277,6 +1294,10 @@ static const GLenum gl_primitive[] = {
 	GL_TRIANGLES,
 	GL_TRIANGLE_STRIP,
 	GL_TRIANGLE_FAN
+};
+
+static const GLenum gl_voxel_primitive[] = {
+	GL_TRIANGLES,
 };
 
 void RasterizerSceneGLES2::_set_cull(bool p_front, bool p_disabled, bool p_reverse_cull) {
@@ -1408,6 +1429,17 @@ bool RasterizerSceneGLES2::_setup_material(RasterizerStorageGLES2::Material *p_m
 void RasterizerSceneGLES2::_setup_geometry(RenderList::Element *p_element, RasterizerStorageGLES2::Skeleton *p_skeleton) {
 
 	switch (p_element->instance->base_type) {
+
+		case VS::INSTANCE_VOXEL: {
+			RasterizerStorageGLES2::VoxelSurface *s = static_cast<RasterizerStorageGLES2::VoxelSurface *>(p_element->geometry);
+
+			glBindBuffer(GL_ARRAY_BUFFER, s->vertex_id);
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, s->index_id);
+
+			glEnableVertexAttribArray(s->combined_attrib.index);
+			glVertexAttribPointer(s->combined_attrib.index, s->combined_attrib.size, s->combined_attrib.type, s->combined_attrib.normalized, s->combined_attrib.stride, CAST_INT_TO_UCHAR_PTR(s->combined_attrib.offset));
+
+		} break;
 
 		case VS::INSTANCE_MESH: {
 			RasterizerStorageGLES2::Surface *s = static_cast<RasterizerStorageGLES2::Surface *>(p_element->geometry);
@@ -1623,6 +1655,15 @@ void RasterizerSceneGLES2::_setup_geometry(RenderList::Element *p_element, Raste
 void RasterizerSceneGLES2::_render_geometry(RenderList::Element *p_element) {
 
 	switch (p_element->instance->base_type) {
+
+		case VS::INSTANCE_VOXEL: {
+
+			RasterizerStorageGLES2::VoxelSurface *s = static_cast<RasterizerStorageGLES2::VoxelSurface *>(p_element->geometry);
+
+			glDrawElements(gl_voxel_primitive[s->primitive], s->index_array_len, (s->array_len >= (1 << 16)) ? GL_UNSIGNED_INT : GL_UNSIGNED_SHORT, 0);
+			storage->info.render.vertices_count += s->index_array_len;
+
+		} break;
 
 		case VS::INSTANCE_MESH: {
 
