@@ -73,7 +73,7 @@ enum VoxelPrimitiveType {
 
 	int get_surface_count() const;
 	Array surface_get_arrays(int p_surface) const;
-	void add_surface_from_arrays(VoxelPrimitiveType p_primitive, const Array &p_arrays, const int p_uv_size);
+	void add_surface_from_arrays(const Array &p_arrays, VoxelPrimitiveType p_primitive, const int p_uv_size);
 	void surface_remove(int p_idx);
 
 	virtual Ref<Material> surface_get_material(int p_idx) const;

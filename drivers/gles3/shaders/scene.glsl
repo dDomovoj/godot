@@ -325,12 +325,6 @@ uniform highp sampler2D skeleton_texture; // texunit:-1
 #endif
 
 #ifdef ENABLE_VOXEL
-// vec2 voxel_uv[4] = vec2[4](
-//     vec2(0.0f, 0.0f),
-//     vec2(0.0f, 1.0f),
-//     vec2(1.0f, 0.0f),
-//     vec2(1.0f, 1.0f)
-// );
 vec3 voxel_normals_lookup_table[6] = vec3[6](
 	vec3(1.0f, 0.0f, 0.0f),
 	vec3(-1.0f, 0.0f, 0.0f),
