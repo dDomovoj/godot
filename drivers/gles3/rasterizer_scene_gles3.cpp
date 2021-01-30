@@ -2268,21 +2268,6 @@ void RasterizerSceneGLES3::_render_list(RenderList::Element **p_elements, int p_
 		prev_use_instancing = use_instancing;
 		prev_is_voxel = is_voxel;
 		prev_opaque_prepass = use_opaque_prepass;
-
-		// static bool should_print = true;
-		// if (should_print && is_voxel) {
-		// 	should_print = false;
-		// 	print_line("material: " + String::num_int64(material->get_id())); // = material;
-		// 	print_line("base_type: " + String::num_int64(e->instance->base_type)); // = e->instance->base_type;
-		// 	print_line("geometry: " + String::num_int64(e->geometry->get_id())); // = e->geometry;
-		// 	print_line("owner: " + String::num_int64(e->owner->get_id())); // = e->owner;
-		// 	print_line("shading: " + String::num_int64(shading)); // = shading;
-		// 	print_line("skeleton: " + String::num_int64(skeleton->get_id())); // = skeleton;
-		// 	print_line("use_instancing: " + String::num_int64(use_instancing)); // = use_instancing;
-		// 	print_line("is_voxel: " + String::num_int64(is_voxel)); // = is_voxel;
-		// 	print_line("opaque_prepass: " + String::num_int64(use_opaque_prepass)); // = use_opaque_prepass;
-		// }
-
 		first = false;
 	}
 
