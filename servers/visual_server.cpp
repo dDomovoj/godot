@@ -639,9 +639,13 @@ Error VisualServer::_voxel_surface_set_data(Array p_arrays, uint32_t *p_offsets,
 				AABB aabb;
 				for (int i = 0; i < p_vertex_array_len; i++) {
 
-					float vector[3] = { src[i].x, src[i].y, src[i].z };
+					// float vector[3] = { src[i].x, src[i].y, src[i].z };
+					print_line("Vtx: " + String::num_int64(i) + "float value: " + String(src[i]));
+					unsigned vector[3] = { unsigned(src[i].x), unsigned(src[i].y), unsigned(src[i].z) };
+					print_line("Vtx: " + String::num_int64(i) + "unsigned value: (" + String::num_uint64(vector[0]) + ", " + String::num_uint64(vector[1]) + ", " + String::num_uint64(vector[2]) + ")");
 
-					copymem(&vw[p_offsets[ai] + i * p_stride], vector, sizeof(float) * 3);
+					// copymem(&vw[p_offsets[ai] + i * p_stride], vector, sizeof(float) * 3);
+					copymem(&vw[p_offsets[ai] + i * p_stride], vector, sizeof(unsigned) * 3);
 
 					if (i == 0) {
 

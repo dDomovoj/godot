@@ -3583,6 +3583,7 @@ void RasterizerStorageGLES3::voxel_mesh_add_surface(RID p_mesh, VS::VoxelPrimiti
 	for (int i = 0; i < VS::VOXEL_ARRAY_MAX; i++) {
 
 		attribs[i].index = i;
+		attribs[i].integer = false;
 		attribs[i].offset = stride;
 
 		switch (i) {
@@ -3590,7 +3591,8 @@ void RasterizerStorageGLES3::voxel_mesh_add_surface(RID p_mesh, VS::VoxelPrimiti
 			case VS::VOXEL_ARRAY_VERTEX: {
 
 				attribs[i].size = 3;
-				attribs[i].type = GL_FLOAT;
+				attribs[i].type = GL_UNSIGNED_INT;
+				attribs[i].integer = true;
 				stride += 12;
 
 			} break;
@@ -3721,11 +3723,11 @@ void RasterizerStorageGLES3::voxel_mesh_add_surface(RID p_mesh, VS::VoxelPrimiti
 
 			for (int i = 0; i < VS::VOXEL_ARRAY_MAX - 1; i++) {
 
-				// if (attribs[i].integer) {
-					// glVertexAttribIPointer(attribs[i].index, attribs[i].size, attribs[i].type, attribs[i].stride, CAST_INT_TO_UCHAR_PTR(attribs[i].offset));
-				// } else {
+				if (attribs[i].integer) {
+					glVertexAttribIPointer(attribs[i].index, attribs[i].size, attribs[i].type, attribs[i].stride, CAST_INT_TO_UCHAR_PTR(attribs[i].offset));
+				} else {
 					glVertexAttribPointer(attribs[i].index, attribs[i].size, attribs[i].type, GL_FALSE, attribs[i].stride, CAST_INT_TO_UCHAR_PTR(attribs[i].offset));
-				// }
+				}
 				glEnableVertexAttribArray(attribs[i].index);
 			}
 
