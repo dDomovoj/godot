@@ -6,7 +6,7 @@
 		"singleton": true,
 		"singleton_name": "GlobalConstants",
 		"instanciable": false,
-		"is_reference": false,
+		"is_reference": true,
 		"constants": {
 			"BUTTON_LEFT": 1,
 			"BUTTON_MASK_LEFT": 1,
@@ -170216,16 +170216,16 @@
 			"INSTANCE_FLAG_USE_BAKED_LIGHT": 0,
 			"INSTANCE_GEOMETRY_MASK": 62,
 			"INSTANCE_GI_PROBE": 8,
-			"INSTANCE_IMMEDIATE": 3,
+			"INSTANCE_IMMEDIATE": 4,
 			"INSTANCE_LIGHT": 6,
 			"INSTANCE_LIGHTMAP_CAPTURE": 9,
 			"INSTANCE_MAX": 10,
-			"INSTANCE_MESH": 1,
-			"INSTANCE_MULTIMESH": 2,
+			"INSTANCE_MESH": 2,
+			"INSTANCE_MULTIMESH": 3,
 			"INSTANCE_NONE": 0,
-			"INSTANCE_PARTICLES": 4,
+			"INSTANCE_PARTICLES": 5,
 			"INSTANCE_REFLECTION_PROBE": 7,
-			"INSTANCE_VOXEL": 5,
+			"INSTANCE_VOXEL": 1,
 			"LIGHT_DIRECTIONAL": 0,
 			"LIGHT_DIRECTIONAL_SHADOW_DEPTH_RANGE_OPTIMIZED": 1,
 			"LIGHT_DIRECTIONAL_SHADOW_DEPTH_RANGE_STABLE": 0,
@@ -170337,9 +170337,6 @@
 			"VIEWPORT_USAGE_2D_NO_SAMPLING": 1,
 			"VIEWPORT_USAGE_3D": 2,
 			"VIEWPORT_USAGE_3D_NO_EFFECTS": 3,
-			"VOXEL_ARRAY_FORMAT_NORMAL": 2,
-			"VOXEL_ARRAY_FORMAT_TEX_UV": 4,
-			"VOXEL_ARRAY_FORMAT_VERTEX": 1,
 			"VOXEL_ARRAY_MAX": 4,
 			"VOXEL_ARRAY_NORMAL": 1,
 			"VOXEL_ARRAY_TEX_UV": 2,
@@ -180193,31 +180190,6 @@
 				]
 			},
 			{
-				"name": "voxel_mesh_surface_get_index_offset",
-				"return_type": "int",
-				"is_editor": false,
-				"is_noscript": false,
-				"is_const": true,
-				"is_reverse": false,
-				"is_virtual": false,
-				"has_varargs": false,
-				"is_from_script": false,
-				"arguments": [
-					{
-						"name": "vertex_len",
-						"type": "int",
-						"has_default_value": false,
-						"default_value": ""
-					},
-					{
-						"name": "index_len",
-						"type": "int",
-						"has_default_value": false,
-						"default_value": ""
-					}
-				]
-			},
-			{
 				"name": "voxel_mesh_surface_get_material",
 				"return_type": "RID",
 				"is_editor": false,
@@ -180261,31 +180233,6 @@
 					},
 					{
 						"name": "surface",
-						"type": "int",
-						"has_default_value": false,
-						"default_value": ""
-					}
-				]
-			},
-			{
-				"name": "voxel_mesh_surface_get_stride",
-				"return_type": "int",
-				"is_editor": false,
-				"is_noscript": false,
-				"is_const": true,
-				"is_reverse": false,
-				"is_virtual": false,
-				"has_varargs": false,
-				"is_from_script": false,
-				"arguments": [
-					{
-						"name": "vertex_len",
-						"type": "int",
-						"has_default_value": false,
-						"default_value": ""
-					},
-					{
-						"name": "index_len",
 						"type": "int",
 						"has_default_value": false,
 						"default_value": ""
@@ -180546,14 +180493,6 @@
 				}
 			},
 			{
-				"name": "VoxelArrayFormat",
-				"values": {
-					"VOXEL_ARRAY_FORMAT_VERTEX": 1,
-					"VOXEL_ARRAY_FORMAT_NORMAL": 2,
-					"VOXEL_ARRAY_FORMAT_TEX_UV": 4
-				}
-			},
-			{
 				"name": "TextureFlags",
 				"values": {
 					"TEXTURE_FLAG_MIPMAPS": 1,
@@ -180577,11 +180516,11 @@
 				"name": "InstanceType",
 				"values": {
 					"INSTANCE_NONE": 0,
-					"INSTANCE_MESH": 1,
-					"INSTANCE_MULTIMESH": 2,
-					"INSTANCE_IMMEDIATE": 3,
-					"INSTANCE_PARTICLES": 4,
-					"INSTANCE_VOXEL": 5,
+					"INSTANCE_VOXEL": 1,
+					"INSTANCE_MESH": 2,
+					"INSTANCE_MULTIMESH": 3,
+					"INSTANCE_IMMEDIATE": 4,
+					"INSTANCE_PARTICLES": 5,
 					"INSTANCE_LIGHT": 6,
 					"INSTANCE_REFLECTION_PROBE": 7,
 					"INSTANCE_GI_PROBE": 8,
@@ -184949,10 +184888,6 @@
 		"instanciable": true,
 		"is_reference": true,
 		"constants": {
-			"VOXEL_ARRAY_FORMAT_INDEX": 8,
-			"VOXEL_ARRAY_FORMAT_NORMAL": 2,
-			"VOXEL_ARRAY_FORMAT_TEX_UV": 4,
-			"VOXEL_ARRAY_FORMAT_VERTEX": 1,
 			"VOXEL_ARRAY_INDEX": 3,
 			"VOXEL_ARRAY_MAX": 4,
 			"VOXEL_ARRAY_NORMAL": 1,
@@ -185169,15 +185104,6 @@
 			}
 		],
 		"enums": [
-			{
-				"name": "VoxelArrayFormat",
-				"values": {
-					"VOXEL_ARRAY_FORMAT_VERTEX": 1,
-					"VOXEL_ARRAY_FORMAT_NORMAL": 2,
-					"VOXEL_ARRAY_FORMAT_TEX_UV": 4,
-					"VOXEL_ARRAY_FORMAT_INDEX": 8
-				}
-			},
 			{
 				"name": "VoxelArrayType",
 				"values": {

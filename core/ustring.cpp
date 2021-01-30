@@ -1379,6 +1379,18 @@ CharString String::ascii(bool p_allow_extended) const {
 	return cs;
 }
 
+static char const hex_chars[16] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
+String String::hex_string_from_bytes(const uint8_t *p_bytes, int p_len) {
+	String ret = String();
+	ret.resize(p_len * 2);
+	for (int i = 0; i < p_len; i++) {
+		const char byte = (char)p_bytes[i];
+	    ret[i] = hex_chars[ ( byte & 0xF0 ) >> 4 ];
+    	ret[i + 1] = hex_chars[ ( byte & 0x0F ) >> 0 ];
+	}
+	return ret;
+}
+
 String String::utf8(const char *p_utf8, int p_len) {
 
 	String ret;

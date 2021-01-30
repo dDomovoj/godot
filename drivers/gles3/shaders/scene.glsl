@@ -19,35 +19,57 @@ ARRAY_WEIGHTS=7,
 ARRAY_INDEX=8,
 */
 
+#ifdef ENABLE_VOXEL
+// /*
+// from VisualServer:
+// 			|  7 |  6 |  5 |  4 |  3 |  2 |  1 |  0 |
+//  	--------+---------------------------------------|
+// 	(0)		|    |    |    |    |    | n2 | n1 | n0 |
+// 	(1)		| x7 | x6 | x5 | x4 | x3 | x2 | x1 | x0 |
+// 	(2)		| y7 | y6 | y5 | y4 | y3 | y2 | y1 | y0 |
+// 	(3)		| z7 | z6 | z5 | z4 | z3 | z2 | z1 | z0 |
+// 	(4) 	|    |    |    |uvx3|uvx3|uvx2|uvx1|uvx0|
+// 	(5)		|uvs2|uvs1|uvs1|uvy4|uvy3|uvy2|uvy1|uvy0|
+//  	--------+---------------------------------------|
+
+// vec3 voxel_normals_lookup_table[6] = vec3[6](
+// 	vec3(1.0f, 0.0f, 0.0f),
+// 	vec3(-1.0f, 0.0f, 0.0f),
+// 	vec3(0.0f, 1.0f, 0.0f),
+// 	vec3(0.0f, -1.0f, 0.0f),
+// 	vec3(0.0f, 0.0f, 1.0f),
+// 	vec3(0.0f, 0.0f, -1.0f),
+// );
+// float voxel_uv_size_lookup_table[8] = float[8](
+// 	1.0,
+// 	0.5,
+// 	0.25,
+// 	0.125,
+// 	0.0625,
+// 	0.03125,
+// 	0.015625,
+// 	0.0078125,
+// );
+
+// uint voxel_normal_idx = voxel_attrib.x & 0x7u;
+// vec3 normal = voxel_normals_lookup_table[voxel_normal_idx)];
+// float voxel_uv_mul = voxel_uv_size_lookup_table[(voxel_attrib.z & 0x3000u) >> 12u];
+// float voxel_uv_x = float(voxel_attrib.z & 0x1Fu) * voxel_uv_size;
+// float voxel_uv_y = float((voxel_attrib.z & 0x1F00u) >> 8u) * voxel_uv_size;
+// uv_interp = vec2(voxel_uv_x, voxel_uv_y);
+// uv_interp = vec2(0, 0);
+
+// */
+#endif
+
 // hack to use uv if no uv present so it works with lightmap
 
 /* INPUT ATTRIBS */
 
-#if defined(ENABLE_VOXEL)
-
-/*
-from VisualServer:
-			|  7 |  6 |  5 |  4 |  3 |  2 |  1 |  0 |
- 	--------+---------------------------------------|
-	(0)		|    |    |    |    |    | n2 | n1 | n0 |
-	(1)		| x7 | x6 | x5 | x4 | x3 | x2 | x1 | x0 |
-	(2)		| y7 | y6 | y5 | y4 | y3 | y2 | y1 | y0 |
-	(3)		| z7 | z6 | z5 | z4 | z3 | z2 | z1 | z0 |
-	(4) 	|    |    |    |uvx3|uvx3|uvx2|uvx1|uvx0|
-	(5)		|uvs2|uvs1|uvs1|uvy4|uvy3|uvy2|uvy1|uvy0|
- 	--------+---------------------------------------|
-*/
-
-layout(location = 0) in highp uvec3 voxel_attrib;
-#else
 layout(location = 0) in highp vec4 vertex_attrib;
-#endif
 
 /* clang-format on */
-#ifndef ENABLE_VOXEL
 layout(location = 1) in vec3 normal_attrib;
-#endif
-
 #if defined(ENABLE_TANGENT_INTERP) || defined(ENABLE_NORMALMAP) || defined(LIGHT_USE_ANISOTROPY)
 layout(location = 2) in vec4 tangent_attrib;
 #endif
@@ -281,7 +303,7 @@ out vec3 normal_interp;
 out vec4 color_interp;
 #endif
 
-#if defined(ENABLE_UV_INTERP) || defined(ENABLE_VOXEL)
+#if defined(ENABLE_UV_INTERP)
 out vec2 uv_interp;
 #endif
 
@@ -324,27 +346,6 @@ out highp float dp_clip;
 uniform highp sampler2D skeleton_texture; // texunit:-1
 #endif
 
-#ifdef ENABLE_VOXEL
-vec3 voxel_normals_lookup_table[6] = vec3[6](
-	vec3(1.0f, 0.0f, 0.0f),
-	vec3(-1.0f, 0.0f, 0.0f),
-	vec3(0.0f, 1.0f, 0.0f),
-	vec3(0.0f, -1.0f, 0.0f),
-	vec3(0.0f, 0.0f, 1.0f),
-	vec3(0.0f, 0.0f, -1.0f),
-);
-float voxel_uv_size_lookup_table[8] = float[8](
-	1.0,
-	0.5,
-	0.25,
-	0.125,
-	0.0625,
-	0.03125,
-	0.015625,
-	0.0078125,
-);
-#endif
-
 out highp vec4 position_interp;
 
 // FIXME: This triggers a Mesa bug that breaks rendering, so disabled for now.
@@ -353,16 +354,9 @@ out highp vec4 position_interp;
 
 void main() {
 
-#if defined(ENABLE_VOXEL)
-	float voxel_vx = float((voxel_attrib.x & 0xFF00u) >> 8u);
-    float voxel_vy = float(voxel_attrib.y & 0xFFFFu);
-    float voxel_vz = float((voxel_attrib.y & 0xFF00u) >> 8u);
-	highp vec4 vertex = vec4(voxel_vx, voxel_vy, voxel_vz, 1.0);
-#else
-	highp vec4 vertex = vertex_attrib; // vec4(vertex_attrib.xyz * data_attrib.x,1.0);
-#endif
+highp vec4 vertex = vertex_attrib; // vec4(vertex_attrib.xyz * data_attrib.x,1.0);
 
-	highp mat4 world_matrix = world_transform;
+highp mat4 world_matrix = world_transform;
 
 #ifdef USE_INSTANCING
 
@@ -372,12 +366,7 @@ void main() {
 	}
 #endif
 
-#if defined(ENABLE_VOXEL)
-	uint voxel_normal_idx = voxel_attrib.x & 0x7u;
-	vec3 normal = voxel_normals_lookup_table[voxel_normal_idx)];
-#else
 	vec3 normal = normal_attrib;
-#endif
 
 #if defined(ENABLE_TANGENT_INTERP) || defined(ENABLE_NORMALMAP) || defined(LIGHT_USE_ANISOTROPY)
 	vec3 tangent = tangent_attrib.xyz;
@@ -399,13 +388,6 @@ void main() {
 
 #if defined(ENABLE_UV_INTERP)
 	uv_interp = uv_attrib;
-#endif
-
-#if defined(ENABLE_VOXEL)
-	float voxel_uv_mul = voxel_uv_size_lookup_table[(voxel_attrib.z & 0x3000u) >> 12u];
-	float voxel_uv_x = float(voxel_attrib.z & 0x1Fu) * voxel_uv_size;
-	float voxel_uv_y = float((voxel_attrib.z & 0x1F00u) >> 8u) * voxel_uv_size;
-	uv_interp = vec2(voxel_uv_x, voxel_uv_y);
 #endif
 
 #if defined(ENABLE_UV2_INTERP) || defined(USE_LIGHTMAP)
@@ -663,7 +645,7 @@ uniform highp mat4 world_transform;
 in vec4 color_interp;
 #endif
 
-#if defined(ENABLE_UV_INTERP) || defined(ENABLE_VOXEL)
+#if defined(ENABLE_UV_INTERP)
 in vec2 uv_interp;
 #endif
 
@@ -1720,7 +1702,7 @@ void main() {
 	}
 #endif
 
-#if defined(ENABLE_UV_INTERP) || defined(ENABLE_VOXEL)
+#if defined(ENABLE_UV_INTERP)
 	vec2 uv = uv_interp;
 #endif
 

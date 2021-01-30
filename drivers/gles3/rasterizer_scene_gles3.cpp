@@ -1537,6 +1537,10 @@ void RasterizerSceneGLES3::_render_geometry(RenderList::Element *e) {
 			
 			RasterizerStorageGLES3::VoxelSurface *s = static_cast<RasterizerStorageGLES3::VoxelSurface *>(e->geometry);
 
+			// glDrawArrays(gl_voxel_primitive[s->primitive], 0, s->array_len);
+
+			// storage->info.render.vertices_count += s->array_len;
+
 			glDrawElements(gl_voxel_primitive[s->primitive], s->index_array_len, (s->array_len >= (1 << 16)) ? GL_UNSIGNED_INT : GL_UNSIGNED_SHORT, 0);
 
 			storage->info.render.vertices_count += s->index_array_len;
@@ -2048,7 +2052,7 @@ void RasterizerSceneGLES3::_render_list(RenderList::Element **p_elements, int p_
 	RasterizerStorageGLES3::Skeleton *prev_skeleton = NULL;
 
 	state.scene_shader.set_conditional(SceneShaderGLES3::SHADELESS, true); //by default unshaded (easier to set)
-	// state.scene_shader.set_conditional(SceneShaderGLES3::ENABLE_VOXEL, false); //by default not voxel (easier to set)
+	// state.scene_shader.set_conditional(SceneShaderGLES3::ENABLE_VOXEL, false); //by default not voxel
 
 	bool first = true;
 	bool prev_use_instancing = false;
@@ -2211,7 +2215,6 @@ void RasterizerSceneGLES3::_render_list(RenderList::Element **p_elements, int p_
 		}
 
 		bool is_voxel = e->instance->base_type == VS::INSTANCE_VOXEL;
-
 		if (is_voxel != prev_is_voxel) {
 			state.scene_shader.set_conditional(SceneShaderGLES3::ENABLE_VOXEL, is_voxel);
 			rebind = true;
@@ -2265,6 +2268,21 @@ void RasterizerSceneGLES3::_render_list(RenderList::Element **p_elements, int p_
 		prev_use_instancing = use_instancing;
 		prev_is_voxel = is_voxel;
 		prev_opaque_prepass = use_opaque_prepass;
+
+		// static bool should_print = true;
+		// if (should_print && is_voxel) {
+		// 	should_print = false;
+		// 	print_line("material: " + String::num_int64(material->get_id())); // = material;
+		// 	print_line("base_type: " + String::num_int64(e->instance->base_type)); // = e->instance->base_type;
+		// 	print_line("geometry: " + String::num_int64(e->geometry->get_id())); // = e->geometry;
+		// 	print_line("owner: " + String::num_int64(e->owner->get_id())); // = e->owner;
+		// 	print_line("shading: " + String::num_int64(shading)); // = shading;
+		// 	print_line("skeleton: " + String::num_int64(skeleton->get_id())); // = skeleton;
+		// 	print_line("use_instancing: " + String::num_int64(use_instancing)); // = use_instancing;
+		// 	print_line("is_voxel: " + String::num_int64(is_voxel)); // = is_voxel;
+		// 	print_line("opaque_prepass: " + String::num_int64(use_opaque_prepass)); // = use_opaque_prepass;
+		// }
+
 		first = false;
 	}
 
@@ -3174,6 +3192,7 @@ void RasterizerSceneGLES3::_fill_render_list(InstanceBase **p_cull_result, int p
 
 			case VS::INSTANCE_VOXEL: {
 
+				// print_line("rasterizer_scene:: _fill_render_list: voxel");
 				RasterizerStorageGLES3::VoxelMesh *mesh = storage->voxel_mesh_owner.getptr(inst->base);
 				ERR_CONTINUE(!mesh);
 
@@ -3182,6 +3201,8 @@ void RasterizerSceneGLES3::_fill_render_list(InstanceBase **p_cull_result, int p
 				for (int j = 0; j < ssize; j++) {
 
 					int mat_idx = inst->materials[j].is_valid() ? j : -1;
+					// print_line("surface mat idx: " + String::num(mat_idx));
+
 					RasterizerStorageGLES3::VoxelSurface *s = mesh->surfaces[j];
 					_add_geometry(s, inst, NULL, mat_idx, p_depth_pass, p_shadow_pass);
 				}

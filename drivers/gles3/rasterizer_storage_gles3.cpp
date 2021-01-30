@@ -3437,22 +3437,31 @@ RID RasterizerStorageGLES3::voxel_mesh_create() {
 
 void RasterizerStorageGLES3::voxel_mesh_add_surface(RID p_mesh, VS::VoxelPrimitiveType p_primitive, const PoolVector<uint8_t> &p_array, int p_vertex_count, const PoolVector<uint8_t> &p_index_array, int p_index_count, const AABB &p_aabb) {
 
+	/*
+
 	PoolVector<uint8_t> array = p_array;
 
 	VoxelMesh *mesh = voxel_mesh_owner.getornull(p_mesh);
 	ERR_FAIL_COND(!mesh);
 
-	const int stride = VS::VOXEL_VERTEX_STRIDE;
+	const int stride = 24; // VS::VOXEL_VERTEX_STRIDE;
 	VoxelSurface::Attrib combined_attrib;
 	combined_attrib.index = 0;
 	combined_attrib.size = 3;
 	combined_attrib.offset = 0;
-	combined_attrib.type = GL_UNSIGNED_SHORT;
+	// combined_attrib.type = GL_UNSIGNED_SHORT;
+	combined_attrib.type = GL_FLOAT;
 	combined_attrib.stride = stride;
-	combined_attrib.normalized = GL_FALSE;
+
+	VoxelSurface::Attrib temp_norm_attrib;
+	temp_norm_attrib.index = 1;
+	temp_norm_attrib.size = 3;
+	temp_norm_attrib.offset = 12;
+	temp_norm_attrib.type = GL_FLOAT;
+	temp_norm_attrib.stride = stride;
 
 	VoxelSurface::Attrib index_attrib;
-	index_attrib.index = 1;
+	index_attrib.index = 2;
 	index_attrib.size = 1;
 	index_attrib.offset = stride;
 	if (p_vertex_count >= (1 << 16)) {
@@ -3462,7 +3471,6 @@ void RasterizerStorageGLES3::voxel_mesh_add_surface(RID p_mesh, VS::VoxelPrimiti
 		index_attrib.type = GL_UNSIGNED_SHORT;
 		index_attrib.stride = 2;
 	}
-	index_attrib.normalized = GL_FALSE;
 
 	//validate sizes
 	const int array_size = stride * p_vertex_count;
@@ -3485,9 +3493,25 @@ void RasterizerStorageGLES3::voxel_mesh_add_surface(RID p_mesh, VS::VoxelPrimiti
 	surface->aabb = p_aabb;
 	surface->total_data_size += surface->array_byte_size + surface->index_array_byte_size;
 	surface->combined_attrib = combined_attrib;
+	surface->temp_norm_attrib = temp_norm_attrib;
 	surface->index_attrib = index_attrib;
 
+	// Okay, now the OpenGL stuff, wheeeeey \o/
 	{
+		PoolVector<uint8_t>::Read vr = array.read();
+		glGenBuffers(1, &surface->vertex_id);
+		glBindBuffer(GL_ARRAY_BUFFER, surface->vertex_id);
+		glBufferData(GL_ARRAY_BUFFER, array_size, vr.ptr(), GL_STATIC_DRAW);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+		PoolVector<uint8_t>::Read ir = p_index_array.read();
+		glGenBuffers(1, &surface->index_id);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, surface->index_id);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, index_array_size, ir.ptr(), GL_STATIC_DRAW);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	}
+
+ 	{
 
 		PoolVector<uint8_t>::Read vr = array.read();
 
@@ -3522,8 +3546,182 @@ void RasterizerStorageGLES3::voxel_mesh_add_surface(RID p_mesh, VS::VoxelPrimiti
 			}
 
 			{
-				glVertexAttribIPointer(combined_attrib.index, combined_attrib.size, combined_attrib.type, combined_attrib.stride, CAST_INT_TO_UCHAR_PTR(combined_attrib.offset));
+				// glVertexAttribIPointer
+				glVertexAttribPointer(combined_attrib.index, combined_attrib.size, combined_attrib.type, GL_FALSE, combined_attrib.stride, CAST_INT_TO_UCHAR_PTR(combined_attrib.offset));
 				glEnableVertexAttribArray(combined_attrib.index);
+
+				glVertexAttribPointer(temp_norm_attrib.index, temp_norm_attrib.size, temp_norm_attrib.type, GL_FALSE, temp_norm_attrib.stride, CAST_INT_TO_UCHAR_PTR(temp_norm_attrib.offset));
+				glEnableVertexAttribArray(temp_norm_attrib.index);
+			}
+
+			if (surface->index_id) {
+				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, surface->index_id);
+			}
+
+			glBindVertexArray(0);
+			glBindBuffer(GL_ARRAY_BUFFER, 0); //unbind
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+		}
+
+	}
+
+	mesh->surfaces.push_back(surface);
+	mesh->instance_change_notify(true, true);
+
+	info.vertex_mem += surface->total_data_size;
+	*/
+
+	PoolVector<uint8_t> array = p_array;
+
+	VoxelMesh *mesh = voxel_mesh_owner.getornull(p_mesh);
+	ERR_FAIL_COND(!mesh);
+
+	VoxelSurface::Attrib attribs[VS::VOXEL_ARRAY_MAX];
+
+	int stride = 0;
+
+	for (int i = 0; i < VS::VOXEL_ARRAY_MAX; i++) {
+
+		attribs[i].index = i;
+		attribs[i].offset = stride;
+
+		switch (i) {
+
+			case VS::VOXEL_ARRAY_VERTEX: {
+
+				attribs[i].size = 3;
+				attribs[i].type = GL_FLOAT;
+				stride += 12;
+
+			} break;
+			case VS::VOXEL_ARRAY_NORMAL: {
+
+				attribs[i].size = 3;
+				attribs[i].type = GL_FLOAT;
+				stride += 12;
+
+			} break;
+			case VS::VOXEL_ARRAY_TEX_UV: {
+
+				attribs[i].size = 2;
+				attribs[i].type = GL_FLOAT;
+				stride += 8;
+
+			} break;
+			case VS::VOXEL_ARRAY_INDEX: {
+
+				attribs[i].size = 1;
+				attribs[i].type = GL_UNSIGNED_SHORT;
+				attribs[i].stride = 2;
+
+			} break;
+		}
+	}
+
+	for (int i = 0; i < VS::VOXEL_ARRAY_MAX - 1; i++) {
+		attribs[i].stride = stride;
+	}
+
+	//validate sizes
+
+	int array_size = stride * p_vertex_count;
+	int index_array_size = 0;
+	// if (array.size() != array_size && array.size() + p_vertex_count * 2 == array_size) {
+	// 	//old format, convert
+	// 	print_line("rasterizer::voxel_mesh_add_surface OLD FORMAT");
+	// 	array = PoolVector<uint8_t>();
+	// 
+	// 	array.resize(p_array.size() + p_vertex_count * 2);
+	// 
+	// 	PoolVector<uint8_t>::Write w = array.write();
+	// 	PoolVector<uint8_t>::Read r = p_array.read();
+	// 
+	// 	uint16_t *w16 = (uint16_t *)w.ptr();
+	// 	const uint16_t *r16 = (uint16_t *)r.ptr();
+	// 
+	// 	uint16_t one = Math::make_half_float(1);
+	// 
+	// 	for (int i = 0; i < p_vertex_count; i++) {
+	// 
+	// 		*w16++ = *r16++;
+	// 		*w16++ = *r16++;
+	// 		*w16++ = *r16++;
+	// 		*w16++ = one;
+	// 		for (int j = 0; j < (stride / 2) - 4; j++) {
+	// 			*w16++ = *r16++;
+	// 		}
+	// 	}
+	// }
+
+	ERR_FAIL_COND(array.size() != array_size);
+
+	{
+		index_array_size = attribs[VS::VOXEL_ARRAY_INDEX].stride * p_index_count;
+	}
+
+	ERR_FAIL_COND(p_index_array.size() != index_array_size);
+
+	//ok all valid, create stuff
+
+	VoxelSurface *surface = memnew(VoxelSurface);
+
+	surface->active = true;
+	surface->array_len = p_vertex_count;
+	surface->index_array_len = p_index_count;
+	surface->array_byte_size = array.size();
+	surface->index_array_byte_size = p_index_array.size();
+	surface->primitive = p_primitive;
+	surface->mesh = mesh;
+	surface->aabb = p_aabb;
+	surface->total_data_size += surface->array_byte_size + surface->index_array_byte_size;
+
+	for (int i = 0; i < VS::VOXEL_ARRAY_MAX; i++) {
+		surface->attribs[i] = attribs[i];
+	}
+
+	{
+
+		PoolVector<uint8_t>::Read vr = array.read();
+
+		glGenBuffers(1, &surface->vertex_id);
+		glBindBuffer(GL_ARRAY_BUFFER, surface->vertex_id);
+		glBufferData(GL_ARRAY_BUFFER, array_size, vr.ptr(), GL_STATIC_DRAW);
+		glBindBuffer(GL_ARRAY_BUFFER, 0); //unbind
+
+		{ // Indices
+
+			PoolVector<uint8_t>::Read ir = p_index_array.read();
+
+			glGenBuffers(1, &surface->index_id);
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, surface->index_id);
+			glBufferData(GL_ELEMENT_ARRAY_BUFFER, index_array_size, ir.ptr(), GL_STATIC_DRAW);
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); //unbind
+		}
+
+		//generate arrays for faster state switching
+
+		for (int ai = 0; ai < 2; ai++) {
+
+			if (ai == 0) {
+				//for normal draw
+				glGenVertexArrays(1, &surface->array_id);
+				glBindVertexArray(surface->array_id);
+				glBindBuffer(GL_ARRAY_BUFFER, surface->vertex_id);
+			} else if (ai == 1) {
+				//for instancing draw (can be changed and no one cares)
+				glGenVertexArrays(1, &surface->instancing_array_id);
+				glBindVertexArray(surface->instancing_array_id);
+				glBindBuffer(GL_ARRAY_BUFFER, surface->vertex_id);
+			}
+
+			for (int i = 0; i < VS::VOXEL_ARRAY_MAX - 1; i++) {
+
+				// if (attribs[i].integer) {
+					// glVertexAttribIPointer(attribs[i].index, attribs[i].size, attribs[i].type, attribs[i].stride, CAST_INT_TO_UCHAR_PTR(attribs[i].offset));
+				// } else {
+					glVertexAttribPointer(attribs[i].index, attribs[i].size, attribs[i].type, GL_FALSE, attribs[i].stride, CAST_INT_TO_UCHAR_PTR(attribs[i].offset));
+				// }
+				glEnableVertexAttribArray(attribs[i].index);
 			}
 
 			if (surface->index_id) {

@@ -15,14 +15,14 @@ class VoxelMesh : public Resource {
 	// RES_BASE_EXTENSION("vxlmesh");
 
 private:
-	struct Surface {
+	struct VoxelSurface {
 		String name;
 		AABB aabb;
 		Ref<Material> material;
 	};
-	Vector<Surface> _surfaces;
-	RID _mesh;
-	AABB _aabb;
+	Vector<VoxelSurface> surfaces;
+	RID mesh;
+	AABB aabb;
 
 	void _recompute_aabb();
 
@@ -46,12 +46,12 @@ enum VoxelArrayType {
 	VOXEL_ARRAY_MAX = VisualServer::VOXEL_ARRAY_MAX
 };
 
-enum VoxelArrayFormat {
-	VOXEL_ARRAY_FORMAT_VERTEX = 1 << VOXEL_ARRAY_VERTEX,
-	VOXEL_ARRAY_FORMAT_NORMAL = 1 << VOXEL_ARRAY_NORMAL,
-	VOXEL_ARRAY_FORMAT_TEX_UV = 1 << VOXEL_ARRAY_TEX_UV,
-	VOXEL_ARRAY_FORMAT_INDEX = 1 << VOXEL_ARRAY_INDEX,
-};
+// enum VoxelArrayFormat {
+// 	VOXEL_ARRAY_FORMAT_VERTEX = 1 << VOXEL_ARRAY_VERTEX,
+// 	VOXEL_ARRAY_FORMAT_NORMAL = 1 << VOXEL_ARRAY_NORMAL,
+// 	VOXEL_ARRAY_FORMAT_TEX_UV = 1 << VOXEL_ARRAY_TEX_UV,
+// 	VOXEL_ARRAY_FORMAT_INDEX = 1 << VOXEL_ARRAY_INDEX,
+// };
 
 enum VoxelPrimitiveType {
 	VOXEL_PRIMITIVE_TRIANGLES = VisualServer::VOXEL_PRIMITIVE_TRIANGLES,
@@ -76,6 +76,8 @@ enum VoxelPrimitiveType {
 	void add_surface_from_arrays(const Array &p_arrays, VoxelPrimitiveType p_primitive, const int p_uv_size);
 	void surface_remove(int p_idx);
 
+	void surface_update_region(int p_surface, int p_offset, const PoolVector<uint8_t> &p_data);
+
 	virtual Ref<Material> surface_get_material(int p_idx) const;
 	virtual void surface_set_material(int p_idx, const Ref<Material> &p_material);
 
@@ -84,8 +86,6 @@ enum VoxelPrimitiveType {
 	int surface_find_by_name(const String &p_name) const;
 
 	// void add_surface(VoxelPrimitiveType p_primitive, const PoolVector<uint8_t> &p_array, int p_vertex_count, const PoolVector<uint8_t> &p_index_array, int p_index_count, const AABB &p_aabb);
-
-	// void surface_update_region(int p_surface, int p_offset, const PoolVector<uint8_t> &p_data);
 
 	// void surface_set_custom_aabb(int p_idx, const AABB &p_aabb); //only recognized by driver
 
@@ -107,7 +107,7 @@ enum VoxelPrimitiveType {
 };
 
 VARIANT_ENUM_CAST(VoxelMesh::VoxelArrayType);
-VARIANT_ENUM_CAST(VoxelMesh::VoxelArrayFormat);
+// VARIANT_ENUM_CAST(VoxelMesh::VoxelArrayFormat);
 VARIANT_ENUM_CAST(VoxelMesh::VoxelPrimitiveType);
 
 #endif /* VOXEL_MESH_H */
