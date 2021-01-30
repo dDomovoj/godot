@@ -70,6 +70,17 @@ layout(location = 0) in highp vec4 vertex_attrib;
 
 /* clang-format on */
 layout(location = 1) in vec3 normal_attrib;
+
+#if defined(ENABLE_VOXEL)
+layout(location = 2) in vec2 uv_attrib;
+#endif
+
+#if defined(ENABLE_VOXEL) && (defined(ENABLE_UV2_INTERP) || defined(USE_LIGHTMAP))
+layout(location = 3) in vec2 uv2_attrib;
+#endif
+
+//
+
 #if defined(ENABLE_TANGENT_INTERP) || defined(ENABLE_NORMALMAP) || defined(LIGHT_USE_ANISOTROPY)
 layout(location = 2) in vec4 tangent_attrib;
 #endif
@@ -78,11 +89,11 @@ layout(location = 2) in vec4 tangent_attrib;
 layout(location = 3) in vec4 color_attrib;
 #endif
 
-#if defined(ENABLE_UV_INTERP)
+#if !defined(ENABLE_VOXEL) && defined(ENABLE_UV_INTERP)
 layout(location = 4) in vec2 uv_attrib;
 #endif
 
-#if defined(ENABLE_UV2_INTERP) || defined(USE_LIGHTMAP)
+#if !defined(ENABLE_VOXEL) && (defined(ENABLE_UV2_INTERP) || defined(USE_LIGHTMAP))
 layout(location = 5) in vec2 uv2_attrib;
 #endif
 
@@ -303,7 +314,7 @@ out vec3 normal_interp;
 out vec4 color_interp;
 #endif
 
-#if defined(ENABLE_UV_INTERP)
+#if defined(ENABLE_UV_INTERP) || defined(ENABLE_VOXEL)
 out vec2 uv_interp;
 #endif
 
@@ -386,7 +397,7 @@ highp mat4 world_matrix = world_transform;
 	vec3 binormal = normalize(cross(normal, tangent) * binormalf);
 #endif
 
-#if defined(ENABLE_UV_INTERP)
+#if defined(ENABLE_UV_INTERP) || defined(ENABLE_VOXEL)
 	uv_interp = uv_attrib;
 #endif
 
@@ -645,7 +656,7 @@ uniform highp mat4 world_transform;
 in vec4 color_interp;
 #endif
 
-#if defined(ENABLE_UV_INTERP)
+#if defined(ENABLE_UV_INTERP) || defined(ENABLE_VOXEL)
 in vec2 uv_interp;
 #endif
 
@@ -1702,7 +1713,7 @@ void main() {
 	}
 #endif
 
-#if defined(ENABLE_UV_INTERP)
+#if defined(ENABLE_UV_INTERP) || defined(ENABLE_VOXEL)
 	vec2 uv = uv_interp;
 #endif
 

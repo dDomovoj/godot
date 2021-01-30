@@ -3611,8 +3611,13 @@ void RasterizerStorageGLES3::voxel_mesh_add_surface(RID p_mesh, VS::VoxelPrimiti
 			case VS::VOXEL_ARRAY_INDEX: {
 
 				attribs[i].size = 1;
-				attribs[i].type = GL_UNSIGNED_SHORT;
-				attribs[i].stride = 2;
+				if (p_vertex_count >= (1 << 16)) {
+					attribs[i].type = GL_UNSIGNED_INT;
+					attribs[i].stride = 4;
+				} else {
+					attribs[i].type = GL_UNSIGNED_SHORT;
+					attribs[i].stride = 2;
+				}
 
 			} break;
 		}
