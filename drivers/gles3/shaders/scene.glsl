@@ -66,18 +66,24 @@ ARRAY_INDEX=8,
 
 /* INPUT ATTRIBS */
 
+#if defined(ENABLE_VOXEL) 
+
+layout(location = 0) in highp uvec4 voxel_attrib;
+
+layout(location = 1) in vec3 normal_attrib;
+
+layout(location = 2) in vec2 uv_attrib;
+
+#if (defined(ENABLE_UV2_INTERP) || defined(USE_LIGHTMAP))
+layout(location = 3) in vec2 uv2_attrib;
+#endif
+
+#else
+
 layout(location = 0) in highp vec4 vertex_attrib;
 
 /* clang-format on */
 layout(location = 1) in vec3 normal_attrib;
-
-#if defined(ENABLE_VOXEL)
-layout(location = 2) in vec2 uv_attrib;
-#endif
-
-#if defined(ENABLE_VOXEL) && (defined(ENABLE_UV2_INTERP) || defined(USE_LIGHTMAP))
-layout(location = 3) in vec2 uv2_attrib;
-#endif
 
 //
 
@@ -89,18 +95,18 @@ layout(location = 2) in vec4 tangent_attrib;
 layout(location = 3) in vec4 color_attrib;
 #endif
 
-#if !defined(ENABLE_VOXEL) && defined(ENABLE_UV_INTERP)
+#if defined(ENABLE_UV_INTERP)
 layout(location = 4) in vec2 uv_attrib;
 #endif
 
-#if !defined(ENABLE_VOXEL) && (defined(ENABLE_UV2_INTERP) || defined(USE_LIGHTMAP))
+#if defined(ENABLE_UV2_INTERP) || defined(USE_LIGHTMAP)
 layout(location = 5) in vec2 uv2_attrib;
 #endif
 
 #ifdef USE_SKELETON
 layout(location = 6) in uvec4 bone_indices; // attrib:6
 layout(location = 7) in highp vec4 bone_weights; // attrib:7
-#endif
+#endif // USE_SKELETON
 
 #ifdef USE_INSTANCING
 
@@ -111,9 +117,11 @@ layout(location = 11) in lowp vec4 instance_color;
 
 #if defined(ENABLE_INSTANCE_CUSTOM)
 layout(location = 12) in highp vec4 instance_custom_data;
-#endif
+#endif // ENABLE_INSTANCE_CUSTOM
 
-#endif
+#endif // USE_INSTANCING
+
+#endif // ENABLE_VOXEL
 
 layout(std140) uniform SceneData { // ubo:0
 
@@ -365,7 +373,11 @@ out highp vec4 position_interp;
 
 void main() {
 
+#ifdef ENABLE_VOXEL 
+highp vec4 vertex = vec4(float(voxel_attrib.x), float(voxel_attrib.y), float(voxel_attrib.z), 1.0);
+#else
 highp vec4 vertex = vertex_attrib; // vec4(vertex_attrib.xyz * data_attrib.x,1.0);
+#endif
 
 highp mat4 world_matrix = world_transform;
 
