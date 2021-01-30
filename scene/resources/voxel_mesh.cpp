@@ -7,11 +7,11 @@
 /// MARK: - Init
 
 VoxelMesh::VoxelMesh() {
-	_mesh = VisualServer::get_singleton()->voxel_mesh_create();
+	mesh = VisualServer::get_singleton()->voxel_mesh_create();
 }
 
 VoxelMesh::~VoxelMesh() {
-	VisualServer::get_singleton()->free(_mesh);
+	VisualServer::get_singleton()->free(mesh);
 }
 
 /// MARK: - Lifecycle
@@ -31,7 +31,7 @@ void VoxelMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("surface_set_material", "surf_idx", "material"), &VoxelMesh::surface_set_material);
 	ClassDB::bind_method(D_METHOD("surface_get_material", "surf_idx"), &VoxelMesh::surface_get_material);
 	
-	// ClassDB::bind_method(D_METHOD("surface_update_region", "surf_idx", "offset", "data"), &VoxelMesh::surface_update_region);
+	ClassDB::bind_method(D_METHOD("surface_update_region", "surf_idx", "offset", "data"), &VoxelMesh::surface_update_region);
 	// ClassDB::bind_method(D_METHOD("surface_get_array_len", "surf_idx"), &VoxelMesh::surface_get_array_len);
 	// ClassDB::bind_method(D_METHOD("surface_get_array_index_len", "surf_idx"), &VoxelMesh::surface_get_array_index_len);
 	// ClassDB::bind_method(D_METHOD("surface_get_format", "surf_idx"), &VoxelMesh::surface_get_format);
@@ -55,31 +55,27 @@ void VoxelMesh::_bind_methods() {
 	BIND_ENUM_CONSTANT(VOXEL_ARRAY_INDEX);
 	BIND_ENUM_CONSTANT(VOXEL_ARRAY_MAX);
 
-	BIND_ENUM_CONSTANT(VOXEL_ARRAY_FORMAT_VERTEX);
-	BIND_ENUM_CONSTANT(VOXEL_ARRAY_FORMAT_NORMAL);
-	BIND_ENUM_CONSTANT(VOXEL_ARRAY_FORMAT_TEX_UV);
-	BIND_ENUM_CONSTANT(VOXEL_ARRAY_FORMAT_INDEX);
+	// BIND_ENUM_CONSTANT(VOXEL_ARRAY_FORMAT_VERTEX);
+	// BIND_ENUM_CONSTANT(VOXEL_ARRAY_FORMAT_NORMAL);
+	// BIND_ENUM_CONSTANT(VOXEL_ARRAY_FORMAT_TEX_UV);
+	// BIND_ENUM_CONSTANT(VOXEL_ARRAY_FORMAT_INDEX);
 }
 
 /// MARK: - Private
 
 void VoxelMesh::_recompute_aabb() {
-	_aabb = AABB();
-	for (int i = 0; i < _surfaces.size(); i++) {
+	aabb = AABB();
+	for (int i = 0; i < surfaces.size(); i++) {
 		if (i == 0)
-			_aabb = _surfaces[i].aabb;
+			aabb = surfaces[i].aabb;
 		else
-			_aabb.merge_with(_surfaces[i].aabb);
+			aabb.merge_with(surfaces[i].aabb);
 	}
 }
 
 /// MARK: - Protected
 
 bool VoxelMesh::_get(const StringName &p_name, Variant &r_ret) const {
-	/*
-	if (_is_generated())
-		return false;
-
 	String sname = p_name;
 
 	if (sname.begins_with("surface_")) {
@@ -102,21 +98,13 @@ bool VoxelMesh::_get(const StringName &p_name, Variant &r_ret) const {
 
 	Dictionary d;
 
-	d["array_data"] = VS::get_singleton()->mesh_surface_get_array(mesh, idx);
-	d["vertex_count"] = VS::get_singleton()->mesh_surface_get_array_len(mesh, idx);
-	d["array_index_data"] = VS::get_singleton()->mesh_surface_get_index_array(mesh, idx);
-	d["index_count"] = VS::get_singleton()->mesh_surface_get_array_index_len(mesh, idx);
-	d["primitive"] = VS::get_singleton()->mesh_surface_get_primitive_type(mesh, idx);
-	d["format"] = VS::get_singleton()->mesh_surface_get_format(mesh, idx);
-	d["aabb"] = VS::get_singleton()->mesh_surface_get_aabb(mesh, idx);
-
-	Vector<AABB> skel_aabb = VS::get_singleton()->mesh_surface_get_skeleton_aabb(mesh, idx);
-	Array arr;
-	arr.resize(skel_aabb.size());
-	for (int i = 0; i < skel_aabb.size(); i++) {
-		arr[i] = skel_aabb[i];
-	}
-	d["skeleton_aabb"] = arr;
+	d["uv_size"] = 1;
+	d["array_data"] = VS::get_singleton()->voxel_mesh_surface_get_array(mesh, idx);
+	d["vertex_count"] = VS::get_singleton()->voxel_mesh_surface_get_array_len(mesh, idx);
+	d["array_index_data"] = VS::get_singleton()->voxel_mesh_surface_get_index_array(mesh, idx);
+	d["index_count"] = VS::get_singleton()->voxel_mesh_surface_get_array_index_len(mesh, idx);
+	d["primitive"] = VS::get_singleton()->voxel_mesh_surface_get_primitive_type(mesh, idx);
+	d["aabb"] = VS::get_singleton()->voxel_mesh_surface_get_aabb(mesh, idx);
 
 	Ref<Material> m = surface_get_material(idx);
 	if (m.is_valid())
@@ -128,12 +116,9 @@ bool VoxelMesh::_get(const StringName &p_name, Variant &r_ret) const {
 	r_ret = d;
 
 	return true; 
-	*/
-	return false;
 }
 
 bool VoxelMesh::_set(const StringName &p_name, const Variant &p_value) {
-	/*
 	String sname = p_name;
 
 	if (sname.begins_with("surface_")) {
@@ -165,7 +150,7 @@ bool VoxelMesh::_set(const StringName &p_name, const Variant &p_value) {
 		if (d.has("arrays")) {
 			//old format
 			ERR_FAIL_COND_V(!d.has("morph_arrays"), false);
-			add_surface_from_arrays(PrimitiveType(int(d["primitive"])), d["arrays"], d["morph_arrays"]);
+			add_surface_from_arrays(d["arrays"], VoxelPrimitiveType(int(d["primitive"])), d["uv_size"]);
 
 		} else if (d.has("array_data")) {
 
@@ -173,9 +158,6 @@ bool VoxelMesh::_set(const StringName &p_name, const Variant &p_value) {
 			PoolVector<uint8_t> array_index_data;
 			if (d.has("array_index_data"))
 				array_index_data = d["array_index_data"];
-
-			ERR_FAIL_COND_V(!d.has("format"), false);
-			uint32_t format = d["format"];
 
 			uint32_t primitive = d["primitive"];
 
@@ -189,17 +171,16 @@ bool VoxelMesh::_set(const StringName &p_name, const Variant &p_value) {
 			ERR_FAIL_COND_V(!d.has("aabb"), false);
 			AABB aabb = d["aabb"];
 
-			Vector<AABB> bone_aabb;
-			if (d.has("skeleton_aabb")) {
-				Array baabb = d["skeleton_aabb"];
-				bone_aabb.resize(baabb.size());
+			{
+				// add_surface(VoxelPrimitiveType(primitive), array_data, vertex_count, array_index_data, index_count, aabb);
 
-				for (int i = 0; i < baabb.size(); i++) {
-					bone_aabb.write[i] = baabb[i];
-				}
+				VoxelSurface s;
+				s.aabb = aabb;
+				surfaces.push_back(s);
+				_recompute_aabb();
+
+				VisualServer::get_singleton()->voxel_mesh_add_surface(mesh, (VS::VoxelPrimitiveType)primitive, array_data, vertex_count, array_index_data, index_count, aabb);
 			}
-
-			add_surface(format, PrimitiveType(primitive), array_data, vertex_count, array_index_data, index_count, aabb, bone_aabb);
 		} else {
 			ERR_FAIL_V(false);
 		}
@@ -214,29 +195,26 @@ bool VoxelMesh::_set(const StringName &p_name, const Variant &p_value) {
 
 		return true;
 	}
-	*/
 	return false;
 }
 
 void VoxelMesh::_get_property_list(List<PropertyInfo> *p_list) const {
-	/*
-	for (int i = 0; i < _surfaces.size(); i++) {
+	for (int i = 0; i < surfaces.size(); i++) {
 		p_list->push_back(PropertyInfo(Variant::DICTIONARY, "surfaces/" + itos(i), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL));
 		p_list->push_back(PropertyInfo(Variant::STRING, "surface_" + itos(i + 1) + "/name", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR));
 		p_list->push_back(PropertyInfo(Variant::OBJECT, "surface_" + itos(i + 1) + "/material", PROPERTY_HINT_RESOURCE_TYPE, "ShaderMaterial,SpatialMaterial", PROPERTY_USAGE_EDITOR));
 	}
-	*/
 }
 
 /// MARK: - Overrides
 
 RID VoxelMesh::get_rid() const {
-	return _mesh;
+	return mesh;
 }
 
 void VoxelMesh::reload_from_file() {
-	VisualServer::get_singleton()->voxel_mesh_clear(_mesh);
-	_surfaces.clear();
+	VisualServer::get_singleton()->voxel_mesh_clear(mesh);
+	surfaces.clear();
 
 	Resource::reload_from_file();
 
@@ -246,26 +224,27 @@ void VoxelMesh::reload_from_file() {
 /// MARK: - Public
 
 AABB VoxelMesh::get_aabb() const {
-	return _aabb;
+	return aabb;
 }
 
 int VoxelMesh::get_surface_count() const {
-	return _surfaces.size();
+	return surfaces.size();
 }
 
 Array VoxelMesh::surface_get_arrays(int p_surface) const {
-	ERR_FAIL_INDEX_V(p_surface, _surfaces.size(), Array());
-	return VisualServer::get_singleton()->voxel_mesh_surface_get_arrays(_mesh, p_surface);
+	ERR_FAIL_INDEX_V(p_surface, surfaces.size(), Array());
+	return VisualServer::get_singleton()->voxel_mesh_surface_get_arrays(mesh, p_surface);
 	return Array();
 }
 
-void VoxelMesh::add_surface_from_arrays(const Array &p_arrays, VoxelPrimitiveType p_primitive,  const int p_uv_size) {
+void VoxelMesh::add_surface_from_arrays(const Array &p_arrays, VoxelPrimitiveType p_primitive, const int p_uv_size) {
 	ERR_FAIL_COND(p_arrays.size() != VOXEL_ARRAY_MAX);
 
-	Surface s;
-	VisualServer::get_singleton()->voxel_mesh_add_surface_from_arrays(_mesh, (VisualServer::VoxelPrimitiveType)p_primitive, p_arrays, p_uv_size);
+	print_line("VoxelMesh::add_surface_from_arrays");
+	VoxelSurface s;
+	VisualServer::get_singleton()->voxel_mesh_add_surface_from_arrays(mesh, (VisualServer::VoxelPrimitiveType)p_primitive, p_arrays, p_uv_size);
 
-	/* make aABB? */ {
+	{ // make aABB?
 
 		Variant arr = p_arrays[VOXEL_ARRAY_VERTEX];
 		PoolVector<Vector3> vertices = arr;
@@ -285,7 +264,7 @@ void VoxelMesh::add_surface_from_arrays(const Array &p_arrays, VoxelPrimitiveTyp
 		}
 
 		s.aabb = aabb;
-		_surfaces.push_back(s);
+		surfaces.push_back(s);
 
 		_recompute_aabb();
 	}
@@ -294,28 +273,34 @@ void VoxelMesh::add_surface_from_arrays(const Array &p_arrays, VoxelPrimitiveTyp
 	emit_changed();
 }
 void VoxelMesh::surface_remove(int p_idx) {
-	ERR_FAIL_INDEX(p_idx, _surfaces.size());
-	VisualServer::get_singleton()->voxel_mesh_remove_surface(_mesh, p_idx);
-	_surfaces.remove(p_idx);
+	ERR_FAIL_INDEX(p_idx, surfaces.size());
+	VisualServer::get_singleton()->voxel_mesh_remove_surface(mesh, p_idx);
+	surfaces.remove(p_idx);
 
 	_recompute_aabb();
 	_change_notify();
 	emit_changed();
 }
 
+void VoxelMesh::surface_update_region(int p_surface, int p_offset, const PoolVector<uint8_t> &p_data) {
+	ERR_FAIL_INDEX(p_surface, surfaces.size());
+	VS::get_singleton()->voxel_mesh_surface_update_region(mesh, p_surface, p_offset, p_data);
+	emit_changed();
+}
+
 /// MARK: Material
 
 Ref<Material> VoxelMesh::surface_get_material(int p_idx) const {
-	ERR_FAIL_INDEX_V(p_idx, _surfaces.size(), Ref<Material>());
-	return _surfaces[p_idx].material;
+	ERR_FAIL_INDEX_V(p_idx, surfaces.size(), Ref<Material>());
+	return surfaces[p_idx].material;
 }
 
 void VoxelMesh::surface_set_material(int p_idx, const Ref<Material> &p_material) {
-	ERR_FAIL_INDEX(p_idx, _surfaces.size());
-	if (_surfaces[p_idx].material == p_material)
+	ERR_FAIL_INDEX(p_idx, surfaces.size());
+	if (surfaces[p_idx].material == p_material)
 		return;
-	_surfaces.write[p_idx].material = p_material;
-	VisualServer::get_singleton()->voxel_mesh_surface_set_material(_mesh, p_idx, p_material.is_null() ? RID() : p_material->get_rid());
+	surfaces.write[p_idx].material = p_material;
+	VisualServer::get_singleton()->voxel_mesh_surface_set_material(mesh, p_idx, p_material.is_null() ? RID() : p_material->get_rid());
 
 	_change_notify("material");
 	emit_changed();
@@ -324,38 +309,24 @@ void VoxelMesh::surface_set_material(int p_idx, const Ref<Material> &p_material)
 /// MARK: Name
 
 String VoxelMesh::surface_get_name(int p_idx) const {
-	ERR_FAIL_INDEX_V(p_idx, _surfaces.size(), String());
-	return _surfaces[p_idx].name;
+	ERR_FAIL_INDEX_V(p_idx, surfaces.size(), String());
+	return surfaces[p_idx].name;
 }
 
 void VoxelMesh::surface_set_name(int p_idx, const String &p_name) {
-	ERR_FAIL_INDEX(p_idx, _surfaces.size());
-	_surfaces.write[p_idx].name = p_name;
+	ERR_FAIL_INDEX(p_idx, surfaces.size());
+	surfaces.write[p_idx].name = p_name;
 	emit_changed();
 }
 
 int VoxelMesh::surface_find_by_name(const String &p_name) const {
-	for (int i = 0; i < _surfaces.size(); i++) {
-		if (_surfaces[i].name == p_name) {
+	for (int i = 0; i < surfaces.size(); i++) {
+		if (surfaces[i].name == p_name) {
 			return i;
 		}
 	}
 	return -1;
 }
-
-// void VoxelMesh::surface_update_region(int p_surface, int p_offset, const PoolVector<uint8_t> &p_data) {
-// 	ERR_FAIL_INDEX(p_surface, _surfaces.size());
-// 	VS::get_singleton()->voxel_mesh_surface_update_region(_mesh, p_surface, p_offset, p_data);
-// 	emit_changed();
-// }
-
-// void VoxelMesh::surface_set_custom_aabb(int p_idx, const AABB &p_aabb) {
-// 
-// 	ERR_FAIL_INDEX(p_idx, surfaces.size());
-// 	surfaces.write[p_idx].aabb = p_aabb;
-// 	// set custom aabb too?
-// 	emit_changed();
-// }
 
 // void VoxelMesh::add_surface_from_mesh_data(const Geometry::MeshData &p_mesh_data) {
 // 
@@ -382,18 +353,6 @@ int VoxelMesh::surface_find_by_name(const String &p_name) const {
 // 	_change_notify();
 // 
 // 	emit_changed();
-// }
-
-// void VoxelMesh::set_custom_aabb(const AABB &p_custom) {
-// 
-// 	custom_aabb = p_custom;
-// 	VS::get_singleton()->mesh_set_custom_aabb(mesh, custom_aabb);
-// 	emit_changed();
-// }
-
-// AABB VoxelMesh::get_custom_aabb() const {
-// 
-// 	return custom_aabb;
 // }
 
 // void VoxelMesh::regen_normalmaps() {

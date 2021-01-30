@@ -298,6 +298,7 @@ public:
 	CharString utf8() const;
 	bool parse_utf8(const char *p_utf8, int p_len = -1); //return true on error
 	static String utf8(const char *p_utf8, int p_len = -1);
+	static String hex_string_from_bytes(const uint8_t *p_bytes, int p_len);
 
 	static uint32_t hash(const CharType *p_cstr, int p_len); /* hash the string */
 	static uint32_t hash(const CharType *p_cstr); /* hash the string */

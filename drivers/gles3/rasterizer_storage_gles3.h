@@ -623,17 +623,22 @@ public:
 	struct VoxelSurface : public Geometry {
 
 		struct Attrib {
+			// GLuint index;
+			// GLint size;
+			// GLenum type;
+			// GLsizei stride;
+			// uint32_t offset;
 			GLuint index;
 			GLint size;
 			GLenum type;
-			GLboolean normalized;
 			GLsizei stride;
 			uint32_t offset;
 		};
 
-		Attrib combined_attrib;
-		Attrib index_attrib;
-		// Attrib attribs[VS::VOXEL_ARRAY_MAX];
+		// Attrib combined_attrib;
+		// Attrib temp_norm_attrib;
+		// Attrib index_attrib;
+		Attrib attribs[VS::VOXEL_ARRAY_MAX];
 
 		VoxelMesh *mesh;
 		// uint32_t format;
@@ -659,6 +664,10 @@ public:
 		PoolVector<uint8_t> index_data;
 
 		int total_data_size;
+
+		virtual void material_changed_notify() {
+			mesh->instance_change_notify(false, true);
+		}
 
 		VoxelSurface() :
 				mesh(NULL),
