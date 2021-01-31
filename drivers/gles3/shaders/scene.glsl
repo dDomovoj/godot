@@ -68,15 +68,13 @@ ARRAY_INDEX=8,
 
 #if defined(ENABLE_VOXEL) 
 
-layout(location = 0) in highp uvec4 voxel_attrib;
+layout(location = 0) in highp uvec2 voxel_attrib;
 
-layout(location = 1) in vec3 normal_attrib;
-
-layout(location = 2) in vec2 uv_attrib;
-
-#if (defined(ENABLE_UV2_INTERP) || defined(USE_LIGHTMAP))
-layout(location = 3) in vec2 uv2_attrib;
-#endif
+// layout(location = 1) in vec3 normal_attrib;
+// layout(location = 2) in vec2 uv_attrib;
+// #if (defined(ENABLE_UV2_INTERP) || defined(USE_LIGHTMAP))
+// layout(location = 3) in vec2 uv2_attrib;
+// #endif
 
 #else
 
@@ -369,14 +367,19 @@ out highp vec4 position_interp;
 
 // FIXME: This triggers a Mesa bug that breaks rendering, so disabled for now.
 // See GH-13450 and https://bugs.freedesktop.org/show_bug.cgi?id=100316
-//invariant gl_Position;
+//invariant gl_Position;go
 
 void main() {
 
 #ifdef ENABLE_VOXEL 
-highp vec4 vertex = vec4(float(voxel_attrib.x), float(voxel_attrib.y), float(voxel_attrib.z), 1.0);
+	float x = float((voxel_attrib.x & 0xFFu));
+	float y = float((voxel_attrib.x & 0xFF00u) >> 8);
+	float z = float((voxel_attrib.x & 0xFF0000u) >> 16);
+	highp vec4 vertex = vec4(x, y, z, 1.0);
+	vec3 normal_attrib = vec3(1.0, 0.0, 0.0);
+	vec2 uv_attrib = vec2(0.0, 0.0);
 #else
-highp vec4 vertex = vertex_attrib; // vec4(vertex_attrib.xyz * data_attrib.x,1.0);
+	highp vec4 vertex = vertex_attrib; // vec4(vertex_attrib.xyz * data_attrib.x,1.0);
 #endif
 
 highp mat4 world_matrix = world_transform;
@@ -389,7 +392,7 @@ highp mat4 world_matrix = world_transform;
 	}
 #endif
 
-	vec3 normal = normal_attrib;
+vec3 normal = normal_attrib;
 
 #if defined(ENABLE_TANGENT_INTERP) || defined(ENABLE_NORMALMAP) || defined(LIGHT_USE_ANISOTROPY)
 	vec3 tangent = tangent_attrib.xyz;

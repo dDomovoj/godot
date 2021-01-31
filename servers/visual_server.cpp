@@ -639,13 +639,19 @@ Error VisualServer::_voxel_surface_set_data(Array p_arrays, uint32_t *p_offsets,
 				AABB aabb;
 				for (int i = 0; i < p_vertex_array_len; i++) {
 
-					// float vector[3] = { src[i].x, src[i].y, src[i].z };
-					print_line("Vtx: " + String::num_int64(i) + "float value: " + String(src[i]));
-					unsigned vector[3] = { unsigned(src[i].x), unsigned(src[i].y), unsigned(src[i].z) };
-					print_line("Vtx: " + String::num_int64(i) + "unsigned value: (" + String::num_uint64(vector[0]) + ", " + String::num_uint64(vector[1]) + ", " + String::num_uint64(vector[2]) + ")");
+					uint8_t vector[8] = {
+						uint8_t(src[i].x),
+						uint8_t(src[i].y),
+						uint8_t(src[i].z),
+						0,
+						0,
+						0,
+						0,
+						0,
+					};
+					// unsigned vector[3] = { unsigned(src[i].x), unsigned(src[i].y), unsigned(src[i].z) };
 
-					// copymem(&vw[p_offsets[ai] + i * p_stride], vector, sizeof(float) * 3);
-					copymem(&vw[p_offsets[ai] + i * p_stride], vector, sizeof(unsigned) * 3);
+					copymem(&vw[p_offsets[ai] + i * p_stride], vector, sizeof(uint8_t) *8);
 
 					if (i == 0) {
 
@@ -660,6 +666,7 @@ Error VisualServer::_voxel_surface_set_data(Array p_arrays, uint32_t *p_offsets,
 
 			} break;
 			case VS::VOXEL_ARRAY_NORMAL: {
+				break;
 
 				ERR_FAIL_COND_V(p_arrays[ai].get_type() != Variant::POOL_VECTOR3_ARRAY, ERR_INVALID_PARAMETER);
 
@@ -677,6 +684,7 @@ Error VisualServer::_voxel_surface_set_data(Array p_arrays, uint32_t *p_offsets,
 			} break;
 
 			case VS::VOXEL_ARRAY_TEX_UV: {
+				break;
 
 				ERR_FAIL_COND_V(p_arrays[ai].get_type() != Variant::POOL_VECTOR3_ARRAY && p_arrays[ai].get_type() != Variant::POOL_VECTOR2_ARRAY, ERR_INVALID_PARAMETER);
 
@@ -854,14 +862,16 @@ void VisualServer::voxel_mesh_add_surface_from_arrays(RID p_mesh, VoxelPrimitive
 		switch (i) {
 
 			case VS::VOXEL_ARRAY_VERTEX: {
-				elem_size = 3 * sizeof(float);
+				elem_size = 2 * sizeof(unsigned);
 			} break;
 
 			case VS::VOXEL_ARRAY_NORMAL: {
+				continue;
 				elem_size = 3 * sizeof(float);
 			} break;
 
 			case VS::VOXEL_ARRAY_TEX_UV: {
+				continue;
 				elem_size = 2 * sizeof(float);
 			} break;
 

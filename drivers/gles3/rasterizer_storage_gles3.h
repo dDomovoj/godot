@@ -628,6 +628,7 @@ public:
 			// GLenum type;
 			// GLsizei stride;
 			// uint32_t offset;
+			bool enabled;
 			bool integer;
 			GLuint index;
 			GLint size;
