@@ -20,46 +20,39 @@ ARRAY_INDEX=8,
 */
 
 #ifdef ENABLE_VOXEL
-// /*
+//
 // from VisualServer:
+//
 // 			|  7 |  6 |  5 |  4 |  3 |  2 |  1 |  0 |
-//  	--------+---------------------------------------|
+//  --------+---------------------------------------|
 // 	(0)		|    |    |    |    |    | n2 | n1 | n0 |
 // 	(1)		| x7 | x6 | x5 | x4 | x3 | x2 | x1 | x0 |
 // 	(2)		| y7 | y6 | y5 | y4 | y3 | y2 | y1 | y0 |
 // 	(3)		| z7 | z6 | z5 | z4 | z3 | z2 | z1 | z0 |
 // 	(4) 	|    |    |    |uvx3|uvx3|uvx2|uvx1|uvx0|
-// 	(5)		|uvs2|uvs1|uvs1|uvy4|uvy3|uvy2|uvy1|uvy0|
-//  	--------+---------------------------------------|
+// 	(5)		|    |    |    |uvy4|uvy3|uvy2|uvy1|uvy0|
+//	(6)		|	 |	  |	   |    |    |uvs2|uvs1|uvs0|
+//	(7)		|	 |	  |	   |    |    |    |    |    |
+//  --------+---------------------------------------|
 
-// vec3 voxel_normals_lookup_table[6] = vec3[6](
-// 	vec3(1.0f, 0.0f, 0.0f),
-// 	vec3(-1.0f, 0.0f, 0.0f),
-// 	vec3(0.0f, 1.0f, 0.0f),
-// 	vec3(0.0f, -1.0f, 0.0f),
-// 	vec3(0.0f, 0.0f, 1.0f),
-// 	vec3(0.0f, 0.0f, -1.0f),
-// );
-// float voxel_uv_size_lookup_table[8] = float[8](
-// 	1.0,
-// 	0.5,
-// 	0.25,
-// 	0.125,
-// 	0.0625,
-// 	0.03125,
-// 	0.015625,
-// 	0.0078125,
-// );
+vec3 voxel_normals_lookup_table[6] = vec3[](
+	vec3(1.0, 0.0, 0.0),
+	vec3(-1.0, 0.0, 0.0),
+	vec3(0.0, 1.0, 0.0),
+	vec3(0.0, -1.0, 0.0),
+	vec3(0.0, 0.0, 1.0),
+	vec3(0.0, 0.0, -1.0));
 
-// uint voxel_normal_idx = voxel_attrib.x & 0x7u;
-// vec3 normal = voxel_normals_lookup_table[voxel_normal_idx)];
+float voxel_uv_mul_lookup_table[8] = float[](
+	1.0, 0.5, 0.25, 0.125, 0.0625, 0.03125, 0.015625, 0.0078125);
+
 // float voxel_uv_mul = voxel_uv_size_lookup_table[(voxel_attrib.z & 0x3000u) >> 12u];
 // float voxel_uv_x = float(voxel_attrib.z & 0x1Fu) * voxel_uv_size;
 // float voxel_uv_y = float((voxel_attrib.z & 0x1F00u) >> 8u) * voxel_uv_size;
 // uv_interp = vec2(voxel_uv_x, voxel_uv_y);
 // uv_interp = vec2(0, 0);
 
-// */
+//
 #endif
 
 // hack to use uv if no uv present so it works with lightmap
@@ -372,12 +365,17 @@ out highp vec4 position_interp;
 void main() {
 
 #ifdef ENABLE_VOXEL 
-	float x = float((voxel_attrib.x & 0xFFu));
-	float y = float((voxel_attrib.x & 0xFF00u) >> 8);
-	float z = float((voxel_attrib.x & 0xFF0000u) >> 16);
-	highp vec4 vertex = vec4(x, y, z, 1.0);
-	vec3 normal_attrib = vec3(1.0, 0.0, 0.0);
-	vec2 uv_attrib = vec2(0.0, 0.0);
+	float voxel_x = float((voxel_attrib.x & 0xFF00u) >> 8);
+	float voxel_y = float((voxel_attrib.x & 0xFF0000u) >> 16);
+	float voxel_z = float((voxel_attrib.x & 0xFF000000u) >> 24);
+
+	float voxel_uv_mul = voxel_uv_mul_lookup_table[(voxel_attrib.y & 0x30000u) >> 16u];
+	float voxel_uv_x = float(voxel_attrib.y & 0x1Fu) * voxel_uv_mul;
+	float voxel_uv_y = float((voxel_attrib.y & 0x1F00u) >> 8u) * voxel_uv_mul;
+
+	highp vec4 vertex = vec4(voxel_x, voxel_y, voxel_z, 1.0);
+	vec3 normal_attrib = voxel_normals_lookup_table[voxel_attrib.x & 0xFFu];
+	vec2 uv_attrib = vec2(voxel_uv_x, voxel_uv_y);
 #else
 	highp vec4 vertex = vertex_attrib; // vec4(vertex_attrib.xyz * data_attrib.x,1.0);
 #endif

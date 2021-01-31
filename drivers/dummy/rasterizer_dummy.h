@@ -155,10 +155,12 @@ public:
 		PoolVector<uint8_t> index_array;
 		int index_count;
 		AABB aabb;
+		int uv_size = 1;
 	};
 
 	struct DummyVoxelMesh: public RID_Data {
 		Vector<DummyVoxelSurface> surfaces;
+		float voxel_size = 1.0;
 	};
 
 	mutable RID_Owner<DummyTexture> texture_owner;
@@ -310,13 +312,14 @@ public:
 		return voxel_mesh_owner.make_rid(mesh);
 	}
 
-	void voxel_mesh_add_surface(RID p_mesh, VS::VoxelPrimitiveType p_primitive, const PoolVector<uint8_t> &p_array, int p_vertex_count, const PoolVector<uint8_t> &p_index_array, int p_index_count, const AABB &p_aabb) {
+	void voxel_mesh_add_surface(RID p_mesh, VS::VoxelPrimitiveType p_primitive, const PoolVector<uint8_t> &p_array, int p_vertex_count, const PoolVector<uint8_t> &p_index_array, int p_index_count, const AABB &p_aabb, const int p_uv_size) {
 		DummyVoxelMesh *m = voxel_mesh_owner.getornull(p_mesh);
 		ERR_FAIL_COND(!m);
 
 		m->surfaces.push_back(DummyVoxelSurface());
 		DummyVoxelSurface *s = &m->surfaces.write[m->surfaces.size() - 1];
 		s->primitive = p_primitive;
+		s->uv_size = p_uv_size;
 		s->array = p_array;
 		s->vertex_count = p_vertex_count;
 		s->index_array = p_index_array;
@@ -359,6 +362,13 @@ public:
 		return VS::VOXEL_PRIMITIVE_TRIANGLES;
 	}
 
+	int voxel_mesh_surface_get_uv_size(RID p_mesh, int p_surface) const {
+		DummyVoxelMesh *m = voxel_mesh_owner.getornull(p_mesh);
+		ERR_FAIL_COND_V(!m, 1);
+
+		return m->surfaces[p_surface].uv_size;
+	}
+
 	AABB voxel_mesh_surface_get_aabb(RID p_mesh, int p_surface) const {
 		DummyVoxelMesh *m = voxel_mesh_owner.getornull(p_mesh);
 		ERR_FAIL_COND_V(!m, AABB());
@@ -367,6 +377,22 @@ public:
 	}
 
 	AABB voxel_mesh_get_aabb(RID p_mesh) const { return AABB(); }
+
+	void voxel_mesh_set_voxel_size(RID p_mesh, const float p_voxel_size) { 
+		ERR_FAIL_COND_MSG(p_voxel_size <= 0, "voxel size must be > 0");
+
+		DummyVoxelMesh *m = voxel_mesh_owner.getornull(p_mesh);
+		ERR_FAIL_COND(!m);
+		ERR_FAIL_COND_MSG(m->surfaces.size(), "voxel size must be set before surfaces create");
+
+		m->voxel_size = p_voxel_size;
+	}
+	float voxel_mesh_get_voxel_size(RID p_mesh) const { 
+		DummyVoxelMesh *m = voxel_mesh_owner.getornull(p_mesh);
+		ERR_FAIL_COND_V(!m, 1.0);
+
+		return m->voxel_size; 	
+	}
 
 	void voxel_mesh_remove_surface(RID p_mesh, int p_surface) {
 		DummyVoxelMesh *m = voxel_mesh_owner.getornull(p_mesh);

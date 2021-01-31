@@ -3435,7 +3435,7 @@ RID RasterizerStorageGLES3::voxel_mesh_create() {
 	return voxel_mesh_owner.make_rid(mesh);
 }
 
-void RasterizerStorageGLES3::voxel_mesh_add_surface(RID p_mesh, VS::VoxelPrimitiveType p_primitive, const PoolVector<uint8_t> &p_array, int p_vertex_count, const PoolVector<uint8_t> &p_index_array, int p_index_count, const AABB &p_aabb) {
+void RasterizerStorageGLES3::voxel_mesh_add_surface(RID p_mesh, VS::VoxelPrimitiveType p_primitive, const PoolVector<uint8_t> &p_array, int p_vertex_count, const PoolVector<uint8_t> &p_index_array, int p_index_count, const AABB &p_aabb, const int p_uv_size) {
 
 	/*
 
@@ -3576,102 +3576,92 @@ void RasterizerStorageGLES3::voxel_mesh_add_surface(RID p_mesh, VS::VoxelPrimiti
 	VoxelMesh *mesh = voxel_mesh_owner.getornull(p_mesh);
 	ERR_FAIL_COND(!mesh);
 
-	VoxelSurface::Attrib attribs[VS::VOXEL_ARRAY_MAX];
+	VoxelSurface::Attrib combined;
+	combined.index = 0;
+	combined.size = 2;
+	combined.type = GL_UNSIGNED_INT;
+	combined.stride = 8;
+	combined.offset = 0;
 
-	int stride = 0;
+	VoxelSurface::Attrib index;
+	index.index = 1;
+	index.size = 1;
+	index.type = (p_vertex_count >= (1 << 16)) ? GL_UNSIGNED_INT : GL_UNSIGNED_SHORT;
+	index.stride = (p_vertex_count >= (1 << 16)) ? 4 : 2;
+	index.offset = 8;
 
-	for (int i = 0; i < VS::VOXEL_ARRAY_MAX; i++) {
+	// for (int i = 0; i < VS::VOXEL_ARRAY_MAX; i++) {
 
-		attribs[i].index = i;
-		attribs[i].integer = false;
-		attribs[i].enabled = false;
-		attribs[i].offset = stride;
+	// 	attribs[i].index = i;
+	// 	attribs[i].integer = false;
+	// 	attribs[i].enabled = false;
+	// 	attribs[i].offset = stride;
 
-		switch (i) {
+	// 	switch (i) {
 
-			case VS::VOXEL_ARRAY_VERTEX: {
+	// 		case VS::VOXEL_ARRAY_VERTEX: {
 
-				attribs[i].size = 2;
-				attribs[i].type = GL_UNSIGNED_INT;
-				attribs[i].integer = true;
-				attribs[i].enabled = true;
-				stride += 8;
+	// 			attribs[i].size = 2;
+	// 			attribs[i].type = GL_UNSIGNED_INT;
+	// 			attribs[i].integer = true;
+	// 			attribs[i].enabled = true;
+	// 			stride += 8;
 
-			} break;
-			case VS::VOXEL_ARRAY_NORMAL: {
+	// 		} break;
+	// 		case VS::VOXEL_ARRAY_NORMAL: {
 
-				attribs[i].size = 3;
-				attribs[i].type = GL_FLOAT;
-				attribs[i].enabled = false;
-				continue;
-				stride += 12;
+	// 			attribs[i].size = 3;
+	// 			attribs[i].type = GL_FLOAT;
+	// 			attribs[i].enabled = false;
+	// 			continue;
+	// 			stride += 12;
 
-			} break;
-			case VS::VOXEL_ARRAY_TEX_UV: {
+	// 		} break;
+	// 		case VS::VOXEL_ARRAY_TEX_UV: {
 
-				attribs[i].size = 2;
-				attribs[i].type = GL_FLOAT;
-				attribs[i].enabled = true;
-				continue;
-				stride += 8;
+	// 			attribs[i].size = 2;
+	// 			attribs[i].type = GL_FLOAT;
+	// 			attribs[i].enabled = true;
+	// 			continue;
+	// 			stride += 8;
 
-			} break;
-			case VS::VOXEL_ARRAY_INDEX: {
+	// 		} break;
+	// 		case VS::VOXEL_ARRAY_INDEX: {
 
-				attribs[i].size = 1;
-				if (p_vertex_count >= (1 << 16)) {
-					attribs[i].type = GL_UNSIGNED_INT;
-					attribs[i].stride = 4;
-				} else {
-					attribs[i].type = GL_UNSIGNED_SHORT;
-					attribs[i].stride = 2;
-				}
+	// 			attribs[i].size = 1;
+	// 			if (p_vertex_count >= (1 << 16)) {
+	// 				attribs[i].type = GL_UNSIGNED_INT;
+	// 				attribs[i].stride = 4;
+	// 			} else {
+	// 				attribs[i].type = GL_UNSIGNED_SHORT;
+	// 				attribs[i].stride = 2;
+	// 			}
 
-			} break;
-		}
-	}
-
-	for (int i = 0; i < VS::VOXEL_ARRAY_MAX - 1; i++) {
-		attribs[i].stride = stride;
-	}
-
-	//validate sizes
-
-	int array_size = stride * p_vertex_count;
-	int index_array_size = 0;
-	// if (array.size() != array_size && array.size() + p_vertex_count * 2 == array_size) {
-	// 	//old format, convert
-	// 	print_line("rasterizer::voxel_mesh_add_surface OLD FORMAT");
-	// 	array = PoolVector<uint8_t>();
-	// 
-	// 	array.resize(p_array.size() + p_vertex_count * 2);
-	// 
-	// 	PoolVector<uint8_t>::Write w = array.write();
-	// 	PoolVector<uint8_t>::Read r = p_array.read();
-	// 
-	// 	uint16_t *w16 = (uint16_t *)w.ptr();
-	// 	const uint16_t *r16 = (uint16_t *)r.ptr();
-	// 
-	// 	uint16_t one = Math::make_half_float(1);
-	// 
-	// 	for (int i = 0; i < p_vertex_count; i++) {
-	// 
-	// 		*w16++ = *r16++;
-	// 		*w16++ = *r16++;
-	// 		*w16++ = *r16++;
-	// 		*w16++ = one;
-	// 		for (int j = 0; j < (stride / 2) - 4; j++) {
-	// 			*w16++ = *r16++;
-	// 		}
+	// 		} break;
 	// 	}
 	// }
 
+	// for (int i = 0; i < VS::VOXEL_ARRAY_MAX - 1; i++) {
+	// 	attribs[i].stride = stride;
+	// }
+
+	//validate sizes
+
+	// int array_size = stride * p_vertex_count;
+	// int index_array_size = 0;
+
+	// ERR_FAIL_COND(array.size() != array_size);
+
+	// {
+	// 	index_array_size = attribs[VS::VOXEL_ARRAY_INDEX].stride * p_index_count;
+	// }
+
+	// ERR_FAIL_COND(p_index_array.size() != index_array_size);
+
+	int array_size = combined.stride * p_vertex_count;
 	ERR_FAIL_COND(array.size() != array_size);
 
-	{
-		index_array_size = attribs[VS::VOXEL_ARRAY_INDEX].stride * p_index_count;
-	}
-
+	int index_array_size = index.stride * p_index_count;
 	ERR_FAIL_COND(p_index_array.size() != index_array_size);
 
 	//ok all valid, create stuff
@@ -3679,6 +3669,7 @@ void RasterizerStorageGLES3::voxel_mesh_add_surface(RID p_mesh, VS::VoxelPrimiti
 	VoxelSurface *surface = memnew(VoxelSurface);
 
 	surface->active = true;
+	surface->uv_size = p_uv_size;
 	surface->array_len = p_vertex_count;
 	surface->index_array_len = p_index_count;
 	surface->array_byte_size = array.size();
@@ -3687,10 +3678,12 @@ void RasterizerStorageGLES3::voxel_mesh_add_surface(RID p_mesh, VS::VoxelPrimiti
 	surface->mesh = mesh;
 	surface->aabb = p_aabb;
 	surface->total_data_size += surface->array_byte_size + surface->index_array_byte_size;
+	surface->combined_attrib = combined;
+	surface->index_attrib = index;
 
-	for (int i = 0; i < VS::VOXEL_ARRAY_MAX; i++) {
-		surface->attribs[i] = attribs[i];
-	}
+	// for (int i = 0; i < VS::VOXEL_ARRAY_MAX; i++) {
+	// 	surface->attribs[i] = attribs[i];
+	// }
 
 	{
 
@@ -3727,18 +3720,20 @@ void RasterizerStorageGLES3::voxel_mesh_add_surface(RID p_mesh, VS::VoxelPrimiti
 				glBindBuffer(GL_ARRAY_BUFFER, surface->vertex_id);
 			}
 
-			for (int i = 0; i < VS::VOXEL_ARRAY_MAX - 1; i++) {
-
-				if (!attribs[i].enabled)
-					continue;
-
-				if (attribs[i].integer) {
-					glVertexAttribIPointer(attribs[i].index, attribs[i].size, attribs[i].type, attribs[i].stride, CAST_INT_TO_UCHAR_PTR(attribs[i].offset));
-				} else {
-					glVertexAttribPointer(attribs[i].index, attribs[i].size, attribs[i].type, GL_FALSE, attribs[i].stride, CAST_INT_TO_UCHAR_PTR(attribs[i].offset));
-				}
-				glEnableVertexAttribArray(attribs[i].index);
-			}
+			glVertexAttribIPointer(combined.index, combined.size, combined.type, combined.stride, CAST_INT_TO_UCHAR_PTR(combined.offset));
+			glEnableVertexAttribArray(combined.index);
+//			 for (int i = 0; i < VS::VOXEL_ARRAY_MAX - 1; i++) {
+//
+//			 	if (!attribs[i].enabled)
+//			 		continue;
+//
+//			 	if (attribs[i].integer) {
+//					glVertexAttribIPointer(attribs[i].index, attribs[i].size, attribs[i].type, attribs[i].stride, CAST_INT_TO_UCHAR_PTR(attribs[i].offset));
+//				} else {
+//					glVertexAttribPointer(attribs[i].index, attribs[i].size, attribs[i].type, GL_FALSE, attribs[i].stride, CAST_INT_TO_UCHAR_PTR(attribs[i].offset));
+//				}
+//				glEnableVertexAttribArray(attribs[i].index);
+//			}
 
 			if (surface->index_id) {
 				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, surface->index_id);
@@ -3886,6 +3881,14 @@ VS::VoxelPrimitiveType RasterizerStorageGLES3::voxel_mesh_surface_get_primitive_
 	return mesh->surfaces[p_surface]->primitive;
 }
 
+int RasterizerStorageGLES3::voxel_mesh_surface_get_uv_size(RID p_mesh, int p_surface) const {
+	const VoxelMesh *mesh = voxel_mesh_owner.getornull(p_mesh);
+	ERR_FAIL_COND_V(!mesh, 1);
+	ERR_FAIL_INDEX_V(p_surface, mesh->surfaces.size(), 1);
+
+	return mesh->surfaces[p_surface]->uv_size;
+}
+
 AABB RasterizerStorageGLES3::voxel_mesh_surface_get_aabb(RID p_mesh, int p_surface) const {
 	const VoxelMesh *mesh = voxel_mesh_owner.getornull(p_mesh);
 	ERR_FAIL_COND_V(!mesh, AABB());
@@ -3927,6 +3930,21 @@ int RasterizerStorageGLES3::voxel_mesh_get_surface_count(RID p_mesh) const {
 	return mesh->surfaces.size();
 }
 
+void RasterizerStorageGLES3::voxel_mesh_set_voxel_size(RID p_mesh, const float p_voxel_size) {
+	ERR_FAIL_COND_MSG(p_voxel_size <= 0, "voxel size must be > 0");
+
+	VoxelMesh *mesh = voxel_mesh_owner.get(p_mesh);
+	ERR_FAIL_COND(!mesh);
+	ERR_FAIL_COND_MSG(mesh->surfaces.size(), "voxel size must be set before surfaces create");
+
+	mesh->voxel_size = p_voxel_size;
+}
+float RasterizerStorageGLES3::voxel_mesh_get_voxel_size(RID p_mesh) const {
+	VoxelMesh *mesh = voxel_mesh_owner.get(p_mesh);
+	ERR_FAIL_COND_V(!mesh, 1.0);
+
+	return mesh->voxel_size;
+}
 AABB RasterizerStorageGLES3::voxel_mesh_get_aabb(RID p_mesh) const {
 
 	VoxelMesh *mesh = voxel_mesh_owner.get(p_mesh);

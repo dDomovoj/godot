@@ -1,18 +1,13 @@
 #ifndef VOXEL_MESH_H
 #define VOXEL_MESH_H
 
-// #include "core/math/face3.h"
-// #include "core/math/triangle_mesh.h"
 #include "core/resource.h"
 #include "scene/resources/material.h"
-// #include "scene/resources/shape.h"
 #include "servers/visual_server.h"
-// #include "scene/resources/mesh.h"
 
 class VoxelMesh : public Resource {
 
 	GDCLASS(VoxelMesh, Resource);
-	// RES_BASE_EXTENSION("vxlmesh");
 
 private:
 	struct VoxelSurface {
@@ -46,13 +41,6 @@ enum VoxelArrayType {
 	VOXEL_ARRAY_MAX = VisualServer::VOXEL_ARRAY_MAX
 };
 
-// enum VoxelArrayFormat {
-// 	VOXEL_ARRAY_FORMAT_VERTEX = 1 << VOXEL_ARRAY_VERTEX,
-// 	VOXEL_ARRAY_FORMAT_NORMAL = 1 << VOXEL_ARRAY_NORMAL,
-// 	VOXEL_ARRAY_FORMAT_TEX_UV = 1 << VOXEL_ARRAY_TEX_UV,
-// 	VOXEL_ARRAY_FORMAT_INDEX = 1 << VOXEL_ARRAY_INDEX,
-// };
-
 enum VoxelPrimitiveType {
 	VOXEL_PRIMITIVE_TRIANGLES = VisualServer::VOXEL_PRIMITIVE_TRIANGLES,
 };
@@ -68,6 +56,9 @@ enum VoxelPrimitiveType {
 	virtual void reload_from_file();
 
 /// MARK: - Public
+
+	float get_voxel_size() const;
+	void set_voxel_size(const float p_size);
 
 	AABB get_aabb() const;
 
