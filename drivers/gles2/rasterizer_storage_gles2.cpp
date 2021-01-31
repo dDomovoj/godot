@@ -2058,40 +2058,32 @@ RID RasterizerStorageGLES2::voxel_mesh_create() {
 	return voxel_mesh_owner.make_rid(mesh);
 }
 
-void RasterizerStorageGLES2::voxel_mesh_add_surface(RID p_mesh, VS::VoxelPrimitiveType p_primitive, const PoolVector<uint8_t> &p_array, int p_vertex_count, const PoolVector<uint8_t> &p_index_array, int p_index_count, const AABB &p_aabb) {
+void RasterizerStorageGLES2::voxel_mesh_add_surface(RID p_mesh, VS::VoxelPrimitiveType p_primitive, const PoolVector<uint8_t> &p_array, int p_vertex_count, const PoolVector<uint8_t> &p_index_array, int p_index_count, const AABB &p_aabb, const int p_uv_size) {
 
 	PoolVector<uint8_t> array = p_array;
 
 	VoxelMesh *mesh = voxel_mesh_owner.getornull(p_mesh);
 	ERR_FAIL_COND(!mesh);
 
-	const int stride = VS::VOXEL_VERTEX_STRIDE;
-	VoxelSurface::Attrib combined_attrib;
-	combined_attrib.index = 0;
-	combined_attrib.size = 3;
-	combined_attrib.offset = 0;
-	combined_attrib.type = GL_UNSIGNED_SHORT;
-	combined_attrib.stride = stride;
-	combined_attrib.normalized = GL_FALSE;
+	VoxelSurface::Attrib combined;
+	combined.index = 0;
+	combined.size = 2;
+	combined.type = GL_UNSIGNED_INT;
+	combined.stride = 8;
+	combined.offset = 0;
 
-	VoxelSurface::Attrib index_attrib;
-	index_attrib.index = 1;
-	index_attrib.size = 1;
-	index_attrib.offset = stride;
-	if (p_vertex_count >= (1 << 16)) {
-		index_attrib.type = GL_UNSIGNED_INT;
-		index_attrib.stride = 4;
-	} else {
-		index_attrib.type = GL_UNSIGNED_SHORT;
-		index_attrib.stride = 2;
-	}
-	index_attrib.normalized = GL_FALSE;
+	VoxelSurface::Attrib index;
+	index.index = 1;
+	index.size = 1;
+	index.type = (p_vertex_count >= (1 << 16)) ? GL_UNSIGNED_INT : GL_UNSIGNED_SHORT;
+	index.stride = (p_vertex_count >= (1 << 16)) ? 4 : 2;
+	index.offset = 8;
 
 	//validate sizes
-	const int array_size = stride * p_vertex_count;
+	const int array_size = combined.stride * p_vertex_count;
 	ERR_FAIL_COND(array.size() != array_size);
 
-	const int index_array_size = index_attrib.stride * p_index_count;
+	const int index_array_size = index.stride * p_index_count;
 	ERR_FAIL_COND(p_index_array.size() != index_array_size);
 
 	//ok all valid, create stuff
@@ -2106,11 +2098,12 @@ void RasterizerStorageGLES2::voxel_mesh_add_surface(RID p_mesh, VS::VoxelPrimiti
 	surface->primitive = p_primitive;
 	surface->mesh = mesh;
 	surface->aabb = p_aabb;
+	surface->uv_size = p_uv_size;
 	surface->data = array;
 	surface->index_data = p_index_array;
 	surface->total_data_size += surface->array_byte_size + surface->index_array_byte_size;
-	surface->combined_attrib = combined_attrib;
-	surface->index_attrib = index_attrib;
+	surface->combined_attrib = combined;
+	surface->index_attrib = index;
 
 	// Okay, now the OpenGL stuff, wheeeeey \o/
 	{
@@ -2222,6 +2215,13 @@ VS::VoxelPrimitiveType RasterizerStorageGLES2::voxel_mesh_surface_get_primitive_
 
 	return mesh->surfaces[p_surface]->primitive;
 }
+int RasterizerStorageGLES2::voxel_mesh_surface_get_uv_size(RID p_mesh, int p_surface) const {
+	const VoxelMesh *mesh = voxel_mesh_owner.getornull(p_mesh);
+	ERR_FAIL_COND_V(!mesh, 1);
+	ERR_FAIL_INDEX_V(p_surface, mesh->surfaces.size(), 1);
+
+	return mesh->surfaces[p_surface]->uv_size;
+}
 
 AABB RasterizerStorageGLES2::voxel_mesh_surface_get_aabb(RID p_mesh, int p_surface) const {
 	const VoxelMesh *mesh = voxel_mesh_owner.getornull(p_mesh);
@@ -2261,6 +2261,21 @@ int RasterizerStorageGLES2::voxel_mesh_get_surface_count(RID p_mesh) const {
 	return mesh->surfaces.size();
 }
 
+void RasterizerStorageGLES2::voxel_mesh_set_voxel_size(RID p_mesh, const float p_voxel_size) {
+	ERR_FAIL_COND_MSG(p_voxel_size <= 0, "voxel size must be > 0");
+
+	VoxelMesh *mesh = voxel_mesh_owner.get(p_mesh);
+	ERR_FAIL_COND(!mesh);
+	ERR_FAIL_COND_MSG(mesh->surfaces.size(), "voxel size must be set before surfaces create");
+
+	mesh->voxel_size = p_voxel_size;
+}
+float RasterizerStorageGLES2::voxel_mesh_get_voxel_size(RID p_mesh) const {
+	VoxelMesh *mesh = voxel_mesh_owner.get(p_mesh);
+	ERR_FAIL_COND_V(!mesh, 1.0);
+
+	return mesh->voxel_size;
+}
 AABB RasterizerStorageGLES2::voxel_mesh_get_aabb(RID p_mesh) const {
 	VoxelMesh *mesh = voxel_mesh_owner.get(p_mesh);
 	ERR_FAIL_COND_V(!mesh, AABB());

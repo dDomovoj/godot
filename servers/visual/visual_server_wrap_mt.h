@@ -149,7 +149,7 @@ public:
 
 	FUNCRID(voxel_mesh)
 
-	FUNC7(voxel_mesh_add_surface, RID, VoxelPrimitiveType, const PoolVector<uint8_t> &, int, const PoolVector<uint8_t> &, int, const AABB &)
+	FUNC8(voxel_mesh_add_surface, RID, VoxelPrimitiveType, const PoolVector<uint8_t> &, int, const PoolVector<uint8_t> &, int, const AABB &, const int)
 
 	FUNC4(voxel_mesh_surface_update_region, RID, int, int, const PoolVector<uint8_t> &)
 
@@ -165,10 +165,13 @@ public:
 	FUNC2RC(VoxelPrimitiveType, voxel_mesh_surface_get_primitive_type, RID, int)
 
 	FUNC2RC(AABB, voxel_mesh_surface_get_aabb, RID, int)
+	FUNC2RC(int, voxel_mesh_surface_get_uv_size, RID, int)
 
 	FUNC2(voxel_mesh_remove_surface, RID, int)
 	FUNC1RC(int, voxel_mesh_get_surface_count, RID)
 
+	FUNC1RC(float, voxel_mesh_get_voxel_size, RID);
+	FUNC2(voxel_mesh_set_voxel_size, RID, float);
 	FUNC1(voxel_mesh_clear, RID)
 
 	/* MESH API */

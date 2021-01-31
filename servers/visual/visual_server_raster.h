@@ -213,7 +213,7 @@ public:
 
 	BIND0R(RID, voxel_mesh_create)
 
-	BIND7(voxel_mesh_add_surface, RID, VoxelPrimitiveType, const PoolVector<uint8_t> &, int, const PoolVector<uint8_t> &, int, const AABB &)
+	BIND8(voxel_mesh_add_surface, RID, VoxelPrimitiveType, const PoolVector<uint8_t> &, int, const PoolVector<uint8_t> &, int, const AABB &, const int)
 
 	BIND4(voxel_mesh_surface_update_region, RID, int, int, const PoolVector<uint8_t> &)
 
@@ -227,12 +227,16 @@ public:
 	BIND2RC(PoolVector<uint8_t>, voxel_mesh_surface_get_index_array, RID, int)
 
 	BIND2RC(VoxelPrimitiveType, voxel_mesh_surface_get_primitive_type, RID, int)
+	BIND2RC(int, voxel_mesh_surface_get_uv_size, RID, int)
 
 	BIND2RC(AABB, voxel_mesh_surface_get_aabb, RID, int)
 
 	BIND2(voxel_mesh_remove_surface, RID, int)
 	BIND1RC(int, voxel_mesh_get_surface_count, RID)
 
+	BIND1RC(float, voxel_mesh_get_voxel_size, RID)
+	BIND2(voxel_mesh_set_voxel_size, RID, float)
+	
 	BIND1(voxel_mesh_clear, RID)
 
 	/* MESH API */

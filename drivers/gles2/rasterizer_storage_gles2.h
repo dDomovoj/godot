@@ -641,6 +641,7 @@ public:
 		GLuint index_id;
 
 		AABB aabb;
+		int uv_size = 1;
 
 		int array_len;
 		int index_array_len;
@@ -675,6 +676,8 @@ public:
 
 		Vector<VoxelSurface *> surfaces;
 
+		float voxel_size = 1.0;
+
 		// AABB custom_aabb;
 
 		mutable uint64_t last_pass;
@@ -686,7 +689,7 @@ public:
 
 	virtual RID voxel_mesh_create();
 
-	virtual void voxel_mesh_add_surface(RID p_mesh, VS::VoxelPrimitiveType p_primitive, const PoolVector<uint8_t> &p_array, int p_vertex_count, const PoolVector<uint8_t> &p_index_array, int p_index_count, const AABB &p_aabb);
+	virtual void voxel_mesh_add_surface(RID p_mesh, VS::VoxelPrimitiveType p_primitive, const PoolVector<uint8_t> &p_array, int p_vertex_count, const PoolVector<uint8_t> &p_index_array, int p_index_count, const AABB &p_aabb, const int p_uv_size);
 
 	virtual void voxel_mesh_surface_update_region(RID p_mesh, int p_surface, int p_offset, const PoolVector<uint8_t> &p_data);
 
@@ -700,6 +703,7 @@ public:
 	virtual PoolVector<uint8_t> voxel_mesh_surface_get_index_array(RID p_mesh, int p_surface) const;
 
 	virtual VS::VoxelPrimitiveType voxel_mesh_surface_get_primitive_type(RID p_mesh, int p_surface) const;
+	virtual int voxel_mesh_surface_get_uv_size(RID p_mesh, int p_surface) const;
 
 	virtual AABB voxel_mesh_surface_get_aabb(RID p_mesh, int p_surface) const;
 
@@ -707,6 +711,8 @@ public:
 	virtual int voxel_mesh_get_surface_count(RID p_mesh) const;
 
 	virtual AABB voxel_mesh_get_aabb(RID p_mesh) const;
+	virtual float voxel_mesh_get_voxel_size(RID p_mesh) const;
+	virtual void voxel_mesh_set_voxel_size(RID p_mesh, const float p_voxel_size);
 	virtual void voxel_mesh_clear(RID p_mesh);
 
 	/* MESH API */

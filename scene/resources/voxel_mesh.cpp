@@ -21,6 +21,8 @@ void VoxelMesh::_bind_methods() {
 	// ClassDB::bind_method(D_METHOD("get_lightmap_size_hint"), &Mesh::get_lightmap_size_hint);
 	
 	// ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "lightmap_size_hint"), "set_lightmap_size_hint", "get_lightmap_size_hint");
+	ClassDB::bind_method(D_METHOD("get_voxel_size"), &VoxelMesh::get_voxel_size);
+	ClassDB::bind_method(D_METHOD("set_voxel_size", "size"), &VoxelMesh::set_voxel_size);
 	ClassDB::bind_method(D_METHOD("get_aabb"), &VoxelMesh::get_aabb);
 
 	ClassDB::bind_method(D_METHOD("add_surface_from_arrays", "arrays", "primitive", "uv_size"), &VoxelMesh::add_surface_from_arrays);
@@ -98,13 +100,15 @@ bool VoxelMesh::_get(const StringName &p_name, Variant &r_ret) const {
 
 	Dictionary d;
 
-	d["uv_size"] = 1;
 	d["array_data"] = VS::get_singleton()->voxel_mesh_surface_get_array(mesh, idx);
 	d["vertex_count"] = VS::get_singleton()->voxel_mesh_surface_get_array_len(mesh, idx);
 	d["array_index_data"] = VS::get_singleton()->voxel_mesh_surface_get_index_array(mesh, idx);
 	d["index_count"] = VS::get_singleton()->voxel_mesh_surface_get_array_index_len(mesh, idx);
 	d["primitive"] = VS::get_singleton()->voxel_mesh_surface_get_primitive_type(mesh, idx);
+	d["uv_size"] = VS::get_singleton()->voxel_mesh_surface_get_uv_size(mesh, idx);
 	d["aabb"] = VS::get_singleton()->voxel_mesh_surface_get_aabb(mesh, idx);
+
+	d["voxel_size"] = VS::get_singleton()->voxel_mesh_get_voxel_size(mesh);
 
 	Ref<Material> m = surface_get_material(idx);
 	if (m.is_valid())
@@ -170,16 +174,15 @@ bool VoxelMesh::_set(const StringName &p_name, const Variant &p_value) {
 
 			ERR_FAIL_COND_V(!d.has("aabb"), false);
 			AABB aabb = d["aabb"];
+			int uv_size = d["uv_size"];
 
 			{
-				// add_surface(VoxelPrimitiveType(primitive), array_data, vertex_count, array_index_data, index_count, aabb);
-
 				VoxelSurface s;
 				s.aabb = aabb;
 				surfaces.push_back(s);
 				_recompute_aabb();
 
-				VisualServer::get_singleton()->voxel_mesh_add_surface(mesh, (VS::VoxelPrimitiveType)primitive, array_data, vertex_count, array_index_data, index_count, aabb);
+				VisualServer::get_singleton()->voxel_mesh_add_surface(mesh, (VS::VoxelPrimitiveType)primitive, array_data, vertex_count, array_index_data, index_count, aabb, uv_size);
 			}
 		} else {
 			ERR_FAIL_V(false);
@@ -223,6 +226,17 @@ void VoxelMesh::reload_from_file() {
 
 /// MARK: - Public
 
+float VoxelMesh::get_voxel_size() const {
+	return VisualServer::get_singleton()->voxel_mesh_get_voxel_size(mesh);
+}
+
+void VoxelMesh::set_voxel_size(const float p_size) {
+	VisualServer::get_singleton()->voxel_mesh_set_voxel_size(mesh, p_size);
+
+	_change_notify();
+	emit_changed();
+}
+
 AABB VoxelMesh::get_aabb() const {
 	return aabb;
 }
@@ -233,8 +247,8 @@ int VoxelMesh::get_surface_count() const {
 
 Array VoxelMesh::surface_get_arrays(int p_surface) const {
 	ERR_FAIL_INDEX_V(p_surface, surfaces.size(), Array());
+
 	return VisualServer::get_singleton()->voxel_mesh_surface_get_arrays(mesh, p_surface);
-	return Array();
 }
 
 void VoxelMesh::add_surface_from_arrays(const Array &p_arrays, VoxelPrimitiveType p_primitive, const int p_uv_size) {
@@ -273,6 +287,7 @@ void VoxelMesh::add_surface_from_arrays(const Array &p_arrays, VoxelPrimitiveTyp
 }
 void VoxelMesh::surface_remove(int p_idx) {
 	ERR_FAIL_INDEX(p_idx, surfaces.size());
+
 	VisualServer::get_singleton()->voxel_mesh_remove_surface(mesh, p_idx);
 	surfaces.remove(p_idx);
 
@@ -283,6 +298,7 @@ void VoxelMesh::surface_remove(int p_idx) {
 
 void VoxelMesh::surface_update_region(int p_surface, int p_offset, const PoolVector<uint8_t> &p_data) {
 	ERR_FAIL_INDEX(p_surface, surfaces.size());
+
 	VS::get_singleton()->voxel_mesh_surface_update_region(mesh, p_surface, p_offset, p_data);
 	emit_changed();
 }
@@ -291,6 +307,7 @@ void VoxelMesh::surface_update_region(int p_surface, int p_offset, const PoolVec
 
 Ref<Material> VoxelMesh::surface_get_material(int p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx, surfaces.size(), Ref<Material>());
+
 	return surfaces[p_idx].material;
 }
 
@@ -309,11 +326,13 @@ void VoxelMesh::surface_set_material(int p_idx, const Ref<Material> &p_material)
 
 String VoxelMesh::surface_get_name(int p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx, surfaces.size(), String());
+
 	return surfaces[p_idx].name;
 }
 
 void VoxelMesh::surface_set_name(int p_idx, const String &p_name) {
 	ERR_FAIL_INDEX(p_idx, surfaces.size());
+
 	surfaces.write[p_idx].name = p_name;
 	emit_changed();
 }
