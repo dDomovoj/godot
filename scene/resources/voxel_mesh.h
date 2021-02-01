@@ -76,29 +76,11 @@ enum VoxelPrimitiveType {
 	void surface_set_name(int p_idx, const String &p_name);
 	int surface_find_by_name(const String &p_name) const;
 
-	// void add_surface(VoxelPrimitiveType p_primitive, const PoolVector<uint8_t> &p_array, int p_vertex_count, const PoolVector<uint8_t> &p_index_array, int p_index_count, const AABB &p_aabb);
-
-	// void surface_set_custom_aabb(int p_idx, const AABB &p_aabb); //only recognized by driver
-
-	// int surface_get_array_len(int p_idx) const;
-	// int surface_get_array_index_len(int p_idx) const;
-	// uint32_t surface_get_format(int p_idx) const;
-	// VoxelPrimitiveType surface_get_primitive_type(int p_idx) const;
-	// bool surface_is_alpha_sorting_enabled(int p_idx) const;
-
-	// void add_surface_from_mesh_data(const Geometry::MeshData &p_mesh_data);
-
-	// void set_custom_aabb(const AABB &p_custom);
-	// AABB get_custom_aabb() const;
-
-	// void regen_normalmaps();
-
 	// Error lightmap_unwrap(const Transform &p_base_transform = Transform(), float p_texel_size = 0.05);
 
 };
 
 VARIANT_ENUM_CAST(VoxelMesh::VoxelArrayType);
-// VARIANT_ENUM_CAST(VoxelMesh::VoxelArrayFormat);
 VARIANT_ENUM_CAST(VoxelMesh::VoxelPrimitiveType);
 
 #endif /* VOXEL_MESH_H */

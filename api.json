@@ -170341,7 +170341,11 @@
 			"VOXEL_ARRAY_NORMAL": 1,
 			"VOXEL_ARRAY_TEX_UV": 2,
 			"VOXEL_ARRAY_VERTEX": 0,
+<<<<<<< HEAD
 			"VOXEL_PRIMITIVE_MAX": 2,
+=======
+			"VOXEL_PRIMITIVE_MAX": 1,
+>>>>>>> 19ca2e520d99728747d17291b36ad8813e7656c6
 			"VOXEL_PRIMITIVE_TRIANGLES": 0
 		},
 		"properties": [
@@ -179960,12 +179964,15 @@
 						"type": "int",
 						"has_default_value": false,
 						"default_value": ""
+<<<<<<< HEAD
 					},
 					{
 						"name": "voxel_size",
 						"type": "float",
 						"has_default_value": false,
 						"default_value": ""
+=======
+>>>>>>> 19ca2e520d99728747d17291b36ad8813e7656c6
 					}
 				]
 			},
@@ -180021,6 +180028,7 @@
 				]
 			},
 			{
+<<<<<<< HEAD
 				"name": "voxel_mesh_get_voxel_size",
 				"return_type": "float",
 				"is_editor": false,
@@ -180040,6 +180048,8 @@
 				]
 			},
 			{
+=======
+>>>>>>> 19ca2e520d99728747d17291b36ad8813e7656c6
 				"name": "voxel_mesh_remove_surface",
 				"return_type": "void",
 				"is_editor": false,
@@ -180065,6 +180075,7 @@
 				]
 			},
 			{
+<<<<<<< HEAD
 				"name": "voxel_mesh_set_voxel_size",
 				"return_type": "void",
 				"is_editor": false,
@@ -180090,6 +180101,8 @@
 				]
 			},
 			{
+=======
+>>>>>>> 19ca2e520d99728747d17291b36ad8813e7656c6
 				"name": "voxel_mesh_surface_get_aabb",
 				"return_type": "AABB",
 				"is_editor": false,
@@ -180290,6 +180303,7 @@
 				]
 			},
 			{
+<<<<<<< HEAD
 				"name": "voxel_mesh_surface_get_uv_size",
 				"return_type": "int",
 				"is_editor": false,
@@ -180315,6 +180329,8 @@
 				]
 			},
 			{
+=======
+>>>>>>> 19ca2e520d99728747d17291b36ad8813e7656c6
 				"name": "voxel_mesh_surface_set_material",
 				"return_type": "void",
 				"is_editor": false,
@@ -180767,7 +180783,11 @@
 				"name": "VoxelPrimitiveType",
 				"values": {
 					"VOXEL_PRIMITIVE_TRIANGLES": 0,
+<<<<<<< HEAD
 					"VOXEL_PRIMITIVE_MAX": 2
+=======
+					"VOXEL_PRIMITIVE_MAX": 1
+>>>>>>> 19ca2e520d99728747d17291b36ad8813e7656c6
 				}
 			},
 			{
@@ -185033,6 +185053,7 @@
 				]
 			},
 			{
+<<<<<<< HEAD
 				"name": "get_voxel_size",
 				"return_type": "float",
 				"is_editor": false,
@@ -185065,6 +185086,8 @@
 				]
 			},
 			{
+=======
+>>>>>>> 19ca2e520d99728747d17291b36ad8813e7656c6
 				"name": "surface_find_by_name",
 				"return_type": "int",
 				"is_editor": false,
