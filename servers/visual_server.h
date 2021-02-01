@@ -232,26 +232,22 @@ public:
 
 	enum VoxelPrimitiveType {
 		VOXEL_PRIMITIVE_TRIANGLES = 0,
-		VOXEL_PRIMITIVE_MAX = 1,
+		VOXEL_PRIMITIVE_MAX = 2,
 	};
 
 	enum {
-		VOXEL_VERTEX_STRIDE = 6,
+		VOXEL_VERTEX_STRIDE = 8,
 	};
 
 protected:
 	Array _get_array_from_voxel_surface(VoxelPrimitiveType p_primitive, PoolVector<uint8_t> p_vertex_data, int p_vertex_len, PoolVector<uint8_t> p_index_data, int p_index_len) const;
-	Error _voxel_surface_set_data(Array p_arrays, VoxelPrimitiveType p_primitive, PoolVector<uint8_t> &r_vertex_array, int p_vertex_array_len, PoolVector<uint8_t> &r_index_array, int p_index_array_len, AABB &r_aabb, const int p_uv_size);
+	Error _voxel_surface_set_data(Array p_arrays, VoxelPrimitiveType p_primitive, PoolVector<uint8_t> &r_vertex_array, int p_vertex_array_len, PoolVector<uint8_t> &r_index_array, int p_index_array_len, AABB &r_aabb, const int p_uv_size, const float p_voxel_size);
 
 public:
 
 	virtual RID voxel_mesh_create() = 0;
 
-	// virtual uint32_t voxel_mesh_surface_get_index_offset(int p_vertex_len, int p_index_len) const;
-	// virtual uint32_t voxel_mesh_surface_get_stride(int p_vertex_len, int p_index_len) const;
-	/// Returns stride
-	// virtual uint32_t voxel_mesh_surface_make_offsets(int p_vertex_len, int p_index_len, uint32_t *r_offsets) const;
-	virtual void voxel_mesh_add_surface_from_arrays(RID p_mesh, VoxelPrimitiveType p_primitive, const Array &p_arrays, const int p_uv_size);
+	virtual void voxel_mesh_add_surface_from_arrays(RID p_mesh, VoxelPrimitiveType p_primitive, const Array &p_arrays, const int p_uv_size, const float p_voxel_size);
 	virtual void voxel_mesh_add_surface(RID p_mesh, VoxelPrimitiveType p_primitive, const PoolVector<uint8_t> &p_array, int p_vertex_count, const PoolVector<uint8_t> &p_index_array, int p_index_count, const AABB &p_aabb, const int p_uv_size) = 0;
 
 	virtual void voxel_mesh_surface_update_region(RID p_mesh, int p_surface, int p_offset, const PoolVector<uint8_t> &p_data) = 0;

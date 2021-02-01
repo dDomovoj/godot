@@ -170341,7 +170341,7 @@
 			"VOXEL_ARRAY_NORMAL": 1,
 			"VOXEL_ARRAY_TEX_UV": 2,
 			"VOXEL_ARRAY_VERTEX": 0,
-			"VOXEL_PRIMITIVE_MAX": 1,
+			"VOXEL_PRIMITIVE_MAX": 2,
 			"VOXEL_PRIMITIVE_TRIANGLES": 0
 		},
 		"properties": [
@@ -179960,6 +179960,12 @@
 						"type": "int",
 						"has_default_value": false,
 						"default_value": ""
+					},
+					{
+						"name": "voxel_size",
+						"type": "float",
+						"has_default_value": false,
+						"default_value": ""
 					}
 				]
 			},
@@ -180015,6 +180021,25 @@
 				]
 			},
 			{
+				"name": "voxel_mesh_get_voxel_size",
+				"return_type": "float",
+				"is_editor": false,
+				"is_noscript": false,
+				"is_const": true,
+				"is_reverse": false,
+				"is_virtual": false,
+				"has_varargs": false,
+				"is_from_script": false,
+				"arguments": [
+					{
+						"name": "mesh",
+						"type": "RID",
+						"has_default_value": false,
+						"default_value": ""
+					}
+				]
+			},
+			{
 				"name": "voxel_mesh_remove_surface",
 				"return_type": "void",
 				"is_editor": false,
@@ -180034,6 +180059,31 @@
 					{
 						"name": "index",
 						"type": "int",
+						"has_default_value": false,
+						"default_value": ""
+					}
+				]
+			},
+			{
+				"name": "voxel_mesh_set_voxel_size",
+				"return_type": "void",
+				"is_editor": false,
+				"is_noscript": false,
+				"is_const": false,
+				"is_reverse": false,
+				"is_virtual": false,
+				"has_varargs": false,
+				"is_from_script": false,
+				"arguments": [
+					{
+						"name": "mesh",
+						"type": "RID",
+						"has_default_value": false,
+						"default_value": ""
+					},
+					{
+						"name": "voxel_size",
+						"type": "float",
 						"has_default_value": false,
 						"default_value": ""
 					}
@@ -180217,6 +180267,31 @@
 			{
 				"name": "voxel_mesh_surface_get_primitive_type",
 				"return_type": "enum.VisualServer::VoxelPrimitiveType",
+				"is_editor": false,
+				"is_noscript": false,
+				"is_const": true,
+				"is_reverse": false,
+				"is_virtual": false,
+				"has_varargs": false,
+				"is_from_script": false,
+				"arguments": [
+					{
+						"name": "mesh",
+						"type": "RID",
+						"has_default_value": false,
+						"default_value": ""
+					},
+					{
+						"name": "surface",
+						"type": "int",
+						"has_default_value": false,
+						"default_value": ""
+					}
+				]
+			},
+			{
+				"name": "voxel_mesh_surface_get_uv_size",
+				"return_type": "int",
 				"is_editor": false,
 				"is_noscript": false,
 				"is_const": true,
@@ -180692,7 +180767,7 @@
 				"name": "VoxelPrimitiveType",
 				"values": {
 					"VOXEL_PRIMITIVE_TRIANGLES": 0,
-					"VOXEL_PRIMITIVE_MAX": 1
+					"VOXEL_PRIMITIVE_MAX": 2
 				}
 			},
 			{
@@ -184955,6 +185030,38 @@
 				"has_varargs": false,
 				"is_from_script": false,
 				"arguments": [
+				]
+			},
+			{
+				"name": "get_voxel_size",
+				"return_type": "float",
+				"is_editor": false,
+				"is_noscript": false,
+				"is_const": true,
+				"is_reverse": false,
+				"is_virtual": false,
+				"has_varargs": false,
+				"is_from_script": false,
+				"arguments": [
+				]
+			},
+			{
+				"name": "set_voxel_size",
+				"return_type": "void",
+				"is_editor": false,
+				"is_noscript": false,
+				"is_const": false,
+				"is_reverse": false,
+				"is_virtual": false,
+				"has_varargs": false,
+				"is_from_script": false,
+				"arguments": [
+					{
+						"name": "size",
+						"type": "float",
+						"has_default_value": false,
+						"default_value": ""
+					}
 				]
 			},
 			{

@@ -449,7 +449,7 @@ Array VisualServer::_get_array_from_voxel_surface(VoxelPrimitiveType p_primitive
 	return ret;
 }
 
-Error VisualServer::_voxel_surface_set_data(Array p_arrays, VoxelPrimitiveType p_primitive, PoolVector<uint8_t> &r_vertex_array, int p_vertex_array_len, PoolVector<uint8_t> &r_index_array, int p_index_array_len, AABB &r_aabb, const int p_uv_size) {
+Error VisualServer::_voxel_surface_set_data(Array p_arrays, VoxelPrimitiveType p_primitive, PoolVector<uint8_t> &r_vertex_array, int p_vertex_array_len, PoolVector<uint8_t> &r_index_array, int p_index_array_len, AABB &r_aabb, const int p_uv_size, const float p_voxel_size) {
 	ERR_FAIL_COND_V(p_vertex_array_len % 4 != 0, ERR_INVALID_DATA);
 	ERR_FAIL_COND_V(p_uv_size == 0 || (p_uv_size & p_uv_size << 1) != 0, ERR_INVALID_PARAMETER);
 
@@ -511,36 +511,36 @@ Error VisualServer::_voxel_surface_set_data(Array p_arrays, VoxelPrimitiveType p
 		const uint8_t n_idx = ((n.z != 0) << 2) | ((n.y != 0) << 1) | (n.x < 0 || n.y < 0 || n.z < 0);
 		uint8_t vector[32] = {
 			n_idx,
-			uint8_t(v_0.x),
-			uint8_t(v_0.y),
-			uint8_t(v_0.z),
+			uint8_t(v_0.x / p_voxel_size),
+			uint8_t(v_0.y / p_voxel_size),
+			uint8_t(v_0.z / p_voxel_size),
 			uint8_t(t_0.x * uv_size_mul),
 			uint8_t(t_0.y * uv_size_mul),
 			uv_size,
 			0,
 
 			n_idx,
-			uint8_t(v_1.x),
-			uint8_t(v_1.y),
-			uint8_t(v_1.z),
+			uint8_t(v_1.x / p_voxel_size),
+			uint8_t(v_1.y / p_voxel_size),
+			uint8_t(v_1.z / p_voxel_size),
 			uint8_t(t_1.x * uv_size_mul),
 			uint8_t(t_1.y * uv_size_mul),
 			uv_size,
 			0,
 
 			n_idx,
-			uint8_t(v_2.x),
-			uint8_t(v_2.y),
-			uint8_t(v_2.z),
+			uint8_t(v_2.x / p_voxel_size),
+			uint8_t(v_2.y / p_voxel_size),
+			uint8_t(v_2.z / p_voxel_size),
 			uint8_t(t_2.x * uv_size_mul),
 			uint8_t(t_2.y * uv_size_mul),
 			uv_size,
 			0,
 
 			n_idx,
-			uint8_t(v_3.x),
-			uint8_t(v_3.y),
-			uint8_t(v_3.z),
+			uint8_t(v_3.x / p_voxel_size),
+			uint8_t(v_3.y / p_voxel_size),
+			uint8_t(v_3.z / p_voxel_size),
 			uint8_t(t_3.x * uv_size_mul),
 			uint8_t(t_3.y * uv_size_mul),
 			uv_size,
@@ -583,213 +583,10 @@ Error VisualServer::_voxel_surface_set_data(Array p_arrays, VoxelPrimitiveType p
 		}
 	}
 
-	/*
-	PoolVector<uint8_t>::Write vw = r_vertex_array.write();
-
-	PoolVector<uint8_t>::Write iw;
-	if (r_index_array.size()) {
-		iw = r_index_array.write();
-	}
-
-	for (int ai = 0; ai < VS::VOXEL_ARRAY_MAX; ai++) {
-
-		switch (ai) {
-
-			case VS::VOXEL_ARRAY_VERTEX: {
-
-				ERR_FAIL_COND_V(p_arrays[ai].get_type() != Variant::POOL_VECTOR3_ARRAY, ERR_INVALID_PARAMETER);
-				PoolVector<Vector3> array = p_arrays[ai];
-				ERR_FAIL_COND_V(array.size() != p_vertex_array_len, ERR_INVALID_PARAMETER);
-
-				PoolVector<Vector3>::Read read = array.read();
-				const Vector3 *src = read.ptr();
-
-				// setting vertices means regenerating the AABB
-				AABB aabb;
-				for (int i = 0; i < p_vertex_array_len; i++) {
-
-					uint8_t vector[8] = {
-						uint8_t(src[i].x),
-						uint8_t(src[i].y),
-						uint8_t(src[i].z),
-						0,
-						0,
-						0,
-						0,
-						0,
-					};
-					// unsigned vector[3] = { unsigned(src[i].x), unsigned(src[i].y), unsigned(src[i].z) };
-
-					copymem(&vw[p_offsets[ai] + i * p_stride], vector, sizeof(uint8_t) *8);
-
-					if (i == 0) {
-
-						aabb = AABB(src[i], SMALL_VEC3);
-					} else {
-
-						aabb.expand_to(src[i]);
-					}
-				}
-
-				r_aabb = aabb;
-
-			} break;
-			case VS::VOXEL_ARRAY_NORMAL: {
-				break;
-
-				ERR_FAIL_COND_V(p_arrays[ai].get_type() != Variant::POOL_VECTOR3_ARRAY, ERR_INVALID_PARAMETER);
-
-				PoolVector<Vector3> array = p_arrays[ai];
-				ERR_FAIL_COND_V(array.size() != p_vertex_array_len, ERR_INVALID_PARAMETER);
-
-				PoolVector<Vector3>::Read read = array.read();
-				const Vector3 *src = read.ptr();
-				for (int i = 0; i < p_vertex_array_len; i++) {
-
-					float vector[3] = { src[i].x, src[i].y, src[i].z };
-					copymem(&vw[p_offsets[ai] + i * p_stride], vector, 3 * 4);
-				}
-
-			} break;
-
-			case VS::VOXEL_ARRAY_TEX_UV: {
-				break;
-
-				ERR_FAIL_COND_V(p_arrays[ai].get_type() != Variant::POOL_VECTOR3_ARRAY && p_arrays[ai].get_type() != Variant::POOL_VECTOR2_ARRAY, ERR_INVALID_PARAMETER);
-
-				PoolVector<Vector2> array = p_arrays[ai];
-
-				ERR_FAIL_COND_V(array.size() != p_vertex_array_len, ERR_INVALID_PARAMETER);
-
-				PoolVector<Vector2>::Read read = array.read();
-
-				const Vector2 *src = read.ptr();
-				for (int i = 0; i < p_vertex_array_len; i++) {
-
-					float uv[2] = { src[i].x, src[i].y };
-
-					copymem(&vw[p_offsets[ai] + i * p_stride], uv, 2 * 4);
-				}
-
-			} break;
-
-			case VS::VOXEL_ARRAY_INDEX: {
-
-				ERR_FAIL_COND_V(p_index_array_len <= 0, ERR_INVALID_DATA);
-				ERR_FAIL_COND_V(p_arrays[ai].get_type() != Variant::POOL_INT_ARRAY, ERR_INVALID_PARAMETER);
-
-				PoolVector<int> indices = p_arrays[ai];
-				ERR_FAIL_COND_V(indices.size() == 0, ERR_INVALID_PARAMETER);
-				ERR_FAIL_COND_V(indices.size() != p_index_array_len, ERR_INVALID_PARAMETER);
-
-				// determine whether using 16 or 32 bits indices
-
-				PoolVector<int>::Read read = indices.read();
-				const int *src = read.ptr();
-
-				for (int i = 0; i < p_index_array_len; i++) {
-
-					if (p_vertex_array_len < (1 << 16)) {
-						uint16_t v = src[i];
-
-						copymem(&iw[i * 2], &v, 2);
-					} else {
-						uint32_t v = src[i];
-
-						copymem(&iw[i * 4], &v, 4);
-					}
-				}
-			} break;
-			default: {
-				ERR_FAIL_V(ERR_INVALID_DATA);
-			}
-		}
-	}
-	*/
-
 	return OK;
 }
 
-// uint32_t VisualServer::voxel_mesh_surface_get_index_offset(int p_vertex_len, int p_index_len) const {
-// 	uint32_t index_offset = 0;
-// 	voxel_mesh_surface_make_offsets(p_vertex_len, p_index_len, &index_offset);
-// 	return index_offset;
-// }
-// uint32_t VisualServer::voxel_mesh_surface_get_stride(int p_vertex_len, int p_index_len) const {
-// 	uint32_t index_offset = 0;
-// 	return voxel_mesh_surface_make_offsets(p_vertex_len, p_index_len, &index_offset);
-// }
-
-// /// Returns stride
-// uint32_t VisualServer::voxel_mesh_surface_make_offsets(int p_vertex_len, int p_index_len, uint32_t *r_index_offset) const {
-// 	int total_elem_size = 3 * sizeof(uint16_t);
-// 	if (p_index_len <= 0) {
-// 		ERR_PRINT("index_array_len==NO_INDEX_ARRAY");
-// 	} else {
-// 		/* determine whether using 16 or 32 bits indices */
-// 		if (p_vertex_len >= (1 << 16))
-// 			*r_index_offset = 4;
-// 		else
-// 			*r_index_offset = 2;
-// 	}
-// 	return total_elem_size;
-// }
-void VisualServer::voxel_mesh_add_surface_from_arrays(RID p_mesh, VoxelPrimitiveType p_primitive, const Array &p_arrays, const int p_uv_size) {
-	/*
-	ERR_FAIL_INDEX(p_primitive, VS::VOXEL_PRIMITIVE_MAX);
-	ERR_FAIL_COND(p_arrays.size() != VS::VOXEL_ARRAY_MAX);
-
-	 // validation
-	int index_array_len = 0;
-	int array_len = 0;
-	for (int i = 0; i < p_arrays.size(); i++) {
-		ERR_FAIL_COND(p_arrays[i].get_type() == Variant::NIL) // all subarrays are mandatory
-
-		if (i == VS::VOXEL_ARRAY_VERTEX) {
-			// Variant var = p_arrays[i];
-			// switch (var.get_type()) {
-			// 	case Variant::POOL_VECTOR2_ARRAY: {
-			// 		PoolVector<Vector2> v2 = var;
-			// 	} break;
-			// 	case Variant::POOL_VECTOR3_ARRAY: {
-			// 		PoolVector<Vector3> v3 = var;
-			// 	} break;
-			// 	default: {
-			// 		Array v = var;
-			// 	} break;
-			// }
-			array_len = PoolVector3Array(p_arrays[i]).size();
-			ERR_FAIL_COND(array_len == 0);
-		} else if (i == VS::VOXEL_ARRAY_INDEX) {
-			index_array_len = PoolIntArray(p_arrays[i]).size();
-			ERR_FAIL_COND(index_array_len == 0);
-		}
-	}
-
-	const int total_elem_size = 24; // VOXEL_ELEMENT_SIZE;
-	const int array_size = total_elem_size * array_len;
-	PoolVector<uint8_t> vertex_array;
-	vertex_array.resize(array_size);
-
-	int index_elem_size = 0;
-	// determine whether using 16 or 32 bits indices
-	if (array_len >= (1 << 16)) {
-		index_elem_size = 4;
-	} else {
-		index_elem_size = 2;
-	}
-	const int index_array_size = index_elem_size * index_array_len;
-	PoolVector<uint8_t> index_array;
-	index_array.resize(index_array_size); 
-
-	AABB aabb;
-	Error err = _voxel_surface_set_data(p_primitive, p_arrays, vertex_array, array_len, index_array, index_array_len, aabb, p_uv_size);
-	ERR_FAIL_COND_MSG(err, "Invalid array format for surface.");
-
-	voxel_mesh_add_surface(p_mesh, p_primitive, vertex_array, array_len, index_array, index_array_len, aabb);
-	*/
-
-	// print_line("VisualServer::voxel_mesh_add_surface_from_arrays");
+void VisualServer::voxel_mesh_add_surface_from_arrays(RID p_mesh, VoxelPrimitiveType p_primitive, const Array &p_arrays, const int p_uv_size, const float p_voxel_size) {
 	ERR_FAIL_INDEX(p_primitive, VS::VOXEL_PRIMITIVE_MAX);
 	ERR_FAIL_COND(p_arrays.size() != VS::VOXEL_ARRAY_MAX);
 
@@ -808,12 +605,8 @@ void VisualServer::voxel_mesh_add_surface_from_arrays(RID p_mesh, VoxelPrimitive
 	index_array.resize(index_array_size);
 
 	AABB aabb;
-	Error err = _voxel_surface_set_data(p_arrays, p_primitive, vertex_array, array_len, index_array, index_array_len, aabb, p_uv_size);
+	Error err = _voxel_surface_set_data(p_arrays, p_primitive, vertex_array, array_len, index_array, index_array_len, aabb, p_uv_size, p_voxel_size);
 	ERR_FAIL_COND_MSG(err, "Invalid array format for surface.");
-
-	// print_line(String("AABB: ") + String(aabb));
-	// print_line(String("surface vertex data:"));
-	// print_line(String::hex_string_from_bytes(vertex_array.read().ptr(), array_size));
 
 	voxel_mesh_add_surface(p_mesh, p_primitive, vertex_array, array_len, index_array, index_array_len, aabb, p_uv_size);
 }
@@ -2183,7 +1976,7 @@ void VisualServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("voxel_mesh_create"), &VisualServer::voxel_mesh_create);
 	// ClassDB::bind_method(D_METHOD("voxel_mesh_surface_get_index_offset", "vertex_len", "index_len"), &VisualServer::voxel_mesh_surface_get_index_offset);
 	// ClassDB::bind_method(D_METHOD("voxel_mesh_surface_get_stride", "vertex_len", "index_len"), &VisualServer::voxel_mesh_surface_get_stride);
-	ClassDB::bind_method(D_METHOD("voxel_mesh_add_surface_from_arrays", "mesh", "primitive", "arrays", "uv_size"), &VisualServer::voxel_mesh_add_surface_from_arrays);
+	ClassDB::bind_method(D_METHOD("voxel_mesh_add_surface_from_arrays", "mesh", "primitive", "arrays", "uv_size", "voxel_size"), &VisualServer::voxel_mesh_add_surface_from_arrays);
 	ClassDB::bind_method(D_METHOD("voxel_mesh_surface_update_region", "mesh", "surface", "offset", "data"), &VisualServer::voxel_mesh_surface_update_region);
 	ClassDB::bind_method(D_METHOD("voxel_mesh_surface_set_material", "mesh", "surface", "material"), &VisualServer::voxel_mesh_surface_set_material);
 	ClassDB::bind_method(D_METHOD("voxel_mesh_surface_get_material", "mesh", "surface"), &VisualServer::voxel_mesh_surface_get_material);

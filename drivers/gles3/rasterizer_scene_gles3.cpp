@@ -1527,6 +1527,7 @@ static const GLenum gl_primitive[] = {
 
 static const GLenum gl_voxel_primitive[] = {
 	GL_TRIANGLES,
+	GL_QUADS,
 };
 
 void RasterizerSceneGLES3::_render_geometry(RenderList::Element *e) {
@@ -1536,14 +1537,17 @@ void RasterizerSceneGLES3::_render_geometry(RenderList::Element *e) {
 		case VS::INSTANCE_VOXEL: {
 			
 			RasterizerStorageGLES3::VoxelSurface *s = static_cast<RasterizerStorageGLES3::VoxelSurface *>(e->geometry);
+			state.scene_shader.set_uniform(SceneShaderGLES3::VOXEL_SIZE, s->mesh->voxel_size);
 
-			// glDrawArrays(gl_voxel_primitive[s->primitive], 0, s->array_len);
+			if (s->index_array_len > 0) {
+				glDrawElements(gl_voxel_primitive[s->primitive], s->index_array_len, (s->array_len >= (1 << 16)) ? GL_UNSIGNED_INT : GL_UNSIGNED_SHORT, 0);
 
-			// storage->info.render.vertices_count += s->array_len;
+				storage->info.render.vertices_count += s->index_array_len;
+			} else {
+				glDrawArrays(gl_primitive[s->primitive], 0, s->array_len);
 
-			glDrawElements(gl_voxel_primitive[s->primitive], s->index_array_len, (s->array_len >= (1 << 16)) ? GL_UNSIGNED_INT : GL_UNSIGNED_SHORT, 0);
-
-			storage->info.render.vertices_count += s->index_array_len;
+				storage->info.render.vertices_count += s->array_len;
+			}
 
 		} break;
 

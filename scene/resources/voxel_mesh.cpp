@@ -254,8 +254,9 @@ Array VoxelMesh::surface_get_arrays(int p_surface) const {
 void VoxelMesh::add_surface_from_arrays(const Array &p_arrays, VoxelPrimitiveType p_primitive, const int p_uv_size) {
 	ERR_FAIL_COND(p_arrays.size() != VOXEL_ARRAY_MAX);
 
+	const float voxel_size = get_voxel_size();
 	VoxelSurface s;
-	VisualServer::get_singleton()->voxel_mesh_add_surface_from_arrays(mesh, (VisualServer::VoxelPrimitiveType)p_primitive, p_arrays, p_uv_size);
+	VisualServer::get_singleton()->voxel_mesh_add_surface_from_arrays(mesh, (VisualServer::VoxelPrimitiveType)p_primitive, p_arrays, p_uv_size, voxel_size);
 
 	{ // make aABB?
 

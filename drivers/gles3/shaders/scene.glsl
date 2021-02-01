@@ -61,7 +61,9 @@ float voxel_uv_mul_lookup_table[8] = float[](
 
 #if defined(ENABLE_VOXEL) 
 
-layout(location = 0) in highp uvec2 voxel_attrib;
+layout(location = 0) in uvec2 voxel_attrib;
+
+uniform highp float voxel_size;
 
 // layout(location = 1) in vec3 normal_attrib;
 // layout(location = 2) in vec2 uv_attrib;
@@ -373,7 +375,7 @@ void main() {
 	float voxel_uv_x = float(voxel_attrib.y & 0x1Fu) * voxel_uv_mul;
 	float voxel_uv_y = float((voxel_attrib.y & 0x1F00u) >> 8u) * voxel_uv_mul;
 
-	highp vec4 vertex = vec4(voxel_x, voxel_y, voxel_z, 1.0);
+	highp vec4 vertex = vec4(voxel_x, voxel_y, voxel_z, 1.0) * vec4(vec3(voxel_size), 1.0);
 	vec3 normal_attrib = voxel_normals_lookup_table[voxel_attrib.x & 0xFFu];
 	vec2 uv_attrib = vec2(voxel_uv_x, voxel_uv_y);
 #else
